@@ -44,23 +44,28 @@ namespace CameraPlus
 		protected Transform _cameraCube;
 		protected ScreenCameraBehaviour _screenCamera;
 		protected GameObject _cameraPreviewQuad;
+        protected Camera _mainCamera = null;
 		
 		protected int _prevScreenWidth;
 		protected int _prevScreenHeight;
 		protected int _prevAA;
 		protected float _prevRenderScale;
+
+       
         
 		public virtual void Init(Camera mainCamera)
 		{
             DontDestroyOnLoad(gameObject);
             Console.WriteLine("[Camera Plus] Created new camera plus behaviour component!");
+
+            _mainCamera = mainCamera;
             
 			XRSettings.showDeviceView = false;
 			
 			Plugin.Instance.Config.ConfigChangedEvent += PluginOnConfigChangedEvent;
 			SceneManager.activeSceneChanged += SceneManager_activeSceneChanged;
 			
-			var gameObj = Instantiate(Camera.main.gameObject);
+			var gameObj = Instantiate(_mainCamera.gameObject);
 			gameObj.SetActive(false);
 			gameObj.name = "Camera Plus";
 			gameObj.tag = "Untagged";
@@ -88,7 +93,7 @@ namespace CameraPlus
 
 			gameObj.SetActive(true);
 
-			var camera = Camera.main.transform;
+			var camera = _mainCamera.transform;
 			transform.position = camera.position;
 			transform.rotation = camera.rotation;
 
@@ -148,8 +153,8 @@ namespace CameraPlus
 			
 			if (!ThirdPerson)
 			{
-				transform.position = Camera.main.transform.position;
-				transform.rotation = Camera.main.transform.rotation;
+				transform.position = _mainCamera.transform.position;
+				transform.rotation = _mainCamera.transform.rotation;
 			}
 			else
 			{
@@ -231,7 +236,7 @@ namespace CameraPlus
 				CreateScreenRenderTexture();
                 Console.WriteLine("Created new render texture!");
 			}
-            var camera = Camera.main.transform;
+            var camera = _mainCamera.transform;
 
 			if (ThirdPerson)
 			{
@@ -255,19 +260,22 @@ namespace CameraPlus
 			var fov = (float) (57.2957801818848 *
 			                   (2.0 * Mathf.Atan(
 				                    Mathf.Tan((float) (Plugin.Instance.Config.fov * (Math.PI / 180.0) * 0.5)) /
-                                    Camera.main.aspect)));
+                                    _mainCamera.aspect)));
 			_cam.fieldOfView = fov;
 		}
 
 		protected virtual void Update()
 		{
+            if (_mainCamera == null)
+                _mainCamera = Camera.main;
+
 			if (Input.GetKeyDown(KeyCode.F1))
 			{
 				ThirdPerson = !ThirdPerson;
 				if (!ThirdPerson)
 				{
-					transform.position = Camera.main.transform.position;
-					transform.rotation = Camera.main.transform.rotation;
+					transform.position = _mainCamera.transform.position;
+					transform.rotation = _mainCamera.transform.rotation;
 				}
 				else
 				{
