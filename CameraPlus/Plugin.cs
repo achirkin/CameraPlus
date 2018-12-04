@@ -8,71 +8,71 @@ using Object = UnityEngine.Object;
 
 namespace CameraPlus
 {
-	public class Plugin : IPlugin
-	{
-		public readonly Config Config = new Config(Path.Combine(Environment.CurrentDirectory, "cameraplus.cfg"));
-		private readonly WaitForSecondsRealtime _waitForSecondsRealtime = new WaitForSecondsRealtime(0.1f);
-		
-		private CameraPlusBehaviour _cameraPlus;
-		private bool _init;
-		
-		public static Plugin Instance { get; private set; }
-		public string Name => "CameraPlus";
-		public string Version => "v2.0.1";
+    public class Plugin : IPlugin
+    {
+        public readonly Config Config = new Config(Path.Combine(Environment.CurrentDirectory, "cameraplus.cfg"));
+        private readonly WaitForSecondsRealtime _waitForSecondsRealtime = new WaitForSecondsRealtime(0.1f);
 
-		public void OnApplicationStart()
-		{
-			if (_init) return;
-			_init = true;
+        private CameraPlusBehaviour _cameraPlus;
+        private bool _init;
 
-			Instance = this;
-			
-			SceneManager.sceneLoaded += SceneManagerOnSceneLoaded;
-		}
+        public static Plugin Instance { get; private set; }
+        public string Name => "CameraPlus";
+        public string Version => "v2.0.1";
 
-		public void OnApplicationQuit()
-		{
-			SceneManager.sceneLoaded -= SceneManagerOnSceneLoaded;
-			Config.Save();
-		}
+        public void OnApplicationStart()
+        {
+            if (_init) return;
+            _init = true;
 
-		public void OnLevelWasLoaded(int level)
-		{
-		}
+            Instance = this;
 
-		public void OnLevelWasInitialized(int level)
-		{
-		}
+            SceneManager.sceneLoaded += SceneManagerOnSceneLoaded;
+        }
 
-		public void OnUpdate()
-		{
-		}
+        public void OnApplicationQuit()
+        {
+            SceneManager.sceneLoaded -= SceneManagerOnSceneLoaded;
+            Config.Save();
+        }
 
-		public void OnFixedUpdate()
-		{
-		}
+        public void OnLevelWasLoaded(int level)
+        {
+        }
 
-		private void SceneManagerOnSceneLoaded(Scene scene, LoadSceneMode mode)
-		{
-			SharedCoroutineStarter.instance.StartCoroutine(DelayedOnSceneLoaded(scene));
-		}
+        public void OnLevelWasInitialized(int level)
+        {
+        }
 
-		private IEnumerator DelayedOnSceneLoaded(Scene scene)
-		{
-			yield return _waitForSecondsRealtime;
-			
-			if (scene.buildIndex < 1) yield break;
+        public void OnUpdate()
+        {
+        }
+
+        public void OnFixedUpdate()
+        {
+        }
+
+        private void SceneManagerOnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            SharedCoroutineStarter.instance.StartCoroutine(DelayedOnSceneLoaded(scene));
+        }
+
+        private IEnumerator DelayedOnSceneLoaded(Scene scene)
+        {
+            yield return _waitForSecondsRealtime;
+
+            if (scene.buildIndex < 1) yield break;
             if (_cameraPlus != null) yield break;
 
-			var mainCamera = Camera.main;
-			if (mainCamera == null)
-			{
-				yield break;
-			}
+            var mainCamera = Camera.main;
+            if (mainCamera == null)
+            {
+                yield break;
+            }
 
-			var gameObj = new GameObject("CameraPlus");
-			_cameraPlus = gameObj.AddComponent<CameraPlusBehaviour>();
-			_cameraPlus.Init(mainCamera);
-		}
-	}
+            var gameObj = new GameObject("CameraPlus");
+            _cameraPlus = gameObj.AddComponent<CameraPlusBehaviour>();
+            _cameraPlus.Init(mainCamera);
+        }
+    }
 }
