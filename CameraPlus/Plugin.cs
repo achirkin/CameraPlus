@@ -62,7 +62,7 @@ namespace CameraPlus
 			yield return _waitForSecondsRealtime;
 			
 			if (scene.buildIndex < 1) yield break;
-			if (_cameraPlus != null) Object.Destroy(_cameraPlus.gameObject);
+            if (_cameraPlus != null) yield break;
 
 			var mainCamera = Camera.main;
 			if (mainCamera == null)

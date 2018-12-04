@@ -17,8 +17,12 @@ namespace CameraPlus
 		protected Vector3 _realPos;
 		protected Quaternion _realRot;
 
+        private static CameraMoverPointer Instance = null;
+
 		public virtual void Init(CameraPlusBehaviour cameraPlus, Transform cameraCube)
 		{
+            if (Instance) Destroy(Instance);
+            Instance = this;
 			_cameraPlus = cameraPlus;
 			_cameraCube = cameraCube;
 			_realPos = Plugin.Instance.Config.Position;

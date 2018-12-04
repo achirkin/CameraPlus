@@ -19,6 +19,9 @@ namespace CameraPlus
 
 		private void Awake()
 		{
+            Console.WriteLine("[Camera Plus] Created new screen camera behaviour component!");
+            DontDestroyOnLoad(this);
+
 			_cam = gameObject.AddComponent<Camera>();
 			_cam.clearFlags = CameraClearFlags.Nothing;
 			_cam.cullingMask = 0;

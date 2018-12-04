@@ -11,9 +11,7 @@ namespace CameraPlus
 	{
 		protected const int OnlyInThirdPerson = 3;
 		protected const int OnlyInFirstPerson = 4;
-
-		protected Camera _mainCamera;
-
+        
 		public bool ThirdPerson
 		{
 			get { return _thirdPerson; }
@@ -51,17 +49,18 @@ namespace CameraPlus
 		protected int _prevScreenHeight;
 		protected int _prevAA;
 		protected float _prevRenderScale;
-
+        
 		public virtual void Init(Camera mainCamera)
 		{
-			_mainCamera = mainCamera;
-			
+            DontDestroyOnLoad(gameObject);
+            Console.WriteLine("[Camera Plus] Created new camera plus behaviour component!");
+            
 			XRSettings.showDeviceView = false;
 			
 			Plugin.Instance.Config.ConfigChangedEvent += PluginOnConfigChangedEvent;
-			SceneManager.sceneLoaded += SceneManagerOnSceneLoaded;
+			SceneManager.activeSceneChanged += SceneManager_activeSceneChanged;
 			
-			var gameObj = Instantiate(_mainCamera.gameObject);
+			var gameObj = Instantiate(Camera.main.gameObject);
 			gameObj.SetActive(false);
 			gameObj.name = "Camera Plus";
 			gameObj.tag = "Untagged";
@@ -89,7 +88,7 @@ namespace CameraPlus
 
 			gameObj.SetActive(true);
 
-			var camera = _mainCamera.transform;
+			var camera = Camera.main.transform;
 			transform.position = camera.position;
 			transform.rotation = camera.rotation;
 
@@ -99,13 +98,15 @@ namespace CameraPlus
 			gameObj.transform.localScale = Vector3.one;
 
 			var cameraCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            DontDestroyOnLoad(cameraCube);
 			cameraCube.SetActive(ThirdPerson);
 			_cameraCube = cameraCube.transform;
 			_cameraCube.localScale = new Vector3(0.15f, 0.15f, 0.22f);
 			_cameraCube.name = "CameraCube";
 
 			var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-			DestroyImmediate(quad.GetComponent<Collider>());
+            DontDestroyOnLoad(quad);
+            DestroyImmediate(quad.GetComponent<Collider>());
 			quad.GetComponent<MeshRenderer>().material = _previewMaterial;
 			quad.transform.parent = _cameraCube;
 			quad.transform.localPosition = new Vector3(-1f * ((_cam.aspect - 1) / 2 + 1), 0, 0.22f);
@@ -127,13 +128,13 @@ namespace CameraPlus
 				_cameraCube.eulerAngles = ThirdPersonRot;
 			}
 			
-			SceneManagerOnSceneLoaded(new Scene(), LoadSceneMode.Single);
+			SceneManager_activeSceneChanged(new Scene(), new Scene());
 		}
 
 		protected virtual void OnDestroy()
 		{
 			Plugin.Instance.Config.ConfigChangedEvent -= PluginOnConfigChangedEvent;
-			SceneManager.sceneLoaded -= SceneManagerOnSceneLoaded;
+			SceneManager.activeSceneChanged -= SceneManager_activeSceneChanged;
 		}
 
 		protected virtual void PluginOnConfigChangedEvent(Config config)
@@ -147,8 +148,8 @@ namespace CameraPlus
 			
 			if (!ThirdPerson)
 			{
-				transform.position = _mainCamera.transform.position;
-				transform.rotation = _mainCamera.transform.rotation;
+				transform.position = Camera.main.transform.position;
+				transform.rotation = Camera.main.transform.rotation;
 			}
 			else
 			{
@@ -215,7 +216,7 @@ namespace CameraPlus
 			scaledHeight = Mathf.Clamp(Mathf.RoundToInt(scaledWidth * ratio), 1, int.MaxValue);
 		}
 
-		protected virtual void SceneManagerOnSceneLoaded(Scene scene, LoadSceneMode mode)
+		protected virtual void SceneManager_activeSceneChanged(Scene from, Scene to)
 		{
 			var pointer = Resources.FindObjectsOfTypeAll<VRPointer>().FirstOrDefault();
 			if (pointer == null) return;
@@ -228,9 +229,9 @@ namespace CameraPlus
 			if (Screen.width != _prevScreenWidth || Screen.height != _prevScreenHeight)
 			{
 				CreateScreenRenderTexture();
+                Console.WriteLine("Created new render texture!");
 			}
-			
-			var camera = _mainCamera.transform;
+            var camera = Camera.main.transform;
 
 			if (ThirdPerson)
 			{
@@ -254,7 +255,7 @@ namespace CameraPlus
 			var fov = (float) (57.2957801818848 *
 			                   (2.0 * Mathf.Atan(
 				                    Mathf.Tan((float) (Plugin.Instance.Config.fov * (Math.PI / 180.0) * 0.5)) /
-				                    _mainCamera.aspect)));
+                                    Camera.main.aspect)));
 			_cam.fieldOfView = fov;
 		}
 
@@ -265,8 +266,8 @@ namespace CameraPlus
 				ThirdPerson = !ThirdPerson;
 				if (!ThirdPerson)
 				{
-					transform.position = _mainCamera.transform.position;
-					transform.rotation = _mainCamera.transform.rotation;
+					transform.position = Camera.main.transform.position;
+					transform.rotation = Camera.main.transform.rotation;
 				}
 				else
 				{
