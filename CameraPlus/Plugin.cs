@@ -36,7 +36,7 @@ namespace CameraPlus
             foreach (string filePath in files)
             {
                 string fileName = Path.GetFileName(filePath);
-                if (fileName != "cameraplus.cfg" && !Cameras.ContainsKey(fileName))
+                if (fileName != "cameraplus.cfg" && fileName.EndsWith(".cfg") && !Cameras.ContainsKey(fileName))
                 {
                     Console.WriteLine($"[Camera Plus] Found config {filePath}!");
                     Cameras.Add(fileName, new CameraPlusInstance(filePath));
