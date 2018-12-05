@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace CameraPlus
 {
@@ -23,7 +26,7 @@ namespace CameraPlus
             _cam.depth = layer;
         }
 
-        private void Awake()
+        public void Awake()
         {
             Console.WriteLine("[Camera Plus] Created new screen camera behaviour component!");
             DontDestroyOnLoad(gameObject);

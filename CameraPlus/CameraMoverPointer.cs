@@ -17,8 +17,6 @@ namespace CameraPlus
         protected Vector3 _realPos;
         protected Quaternion _realRot;
 
-        private static CameraMoverPointer Instance = null;
-
         public virtual void Init(CameraPlusBehaviour cameraPlus, Transform cameraCube)
         {
             _cameraPlus = cameraPlus;
