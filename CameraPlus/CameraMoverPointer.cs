@@ -69,7 +69,7 @@ namespace CameraPlus
         {
             if (_grabbingController != null)
             {
-                var diff = _grabbingController.verticalAxisValue * Time.deltaTime;
+                var diff = _grabbingController.verticalAxisValue * Time.unscaledDeltaTime;
                 if (_grabPos.magnitude > MinScrollDistance)
                 {
                     _grabPos -= Vector3.forward * diff;
@@ -83,10 +83,10 @@ namespace CameraPlus
             }
 
             _cameraPlus.ThirdPersonPos = Vector3.Lerp(_cameraCube.position, _realPos,
-                _cameraPlus.Config.positionSmooth * Time.deltaTime);
+                _cameraPlus.Config.positionSmooth * Time.unscaledDeltaTime);
 
             _cameraPlus.ThirdPersonRot = Quaternion.Slerp(_cameraCube.rotation, _realRot,
-                _cameraPlus.Config.rotationSmooth * Time.deltaTime).eulerAngles;
+                _cameraPlus.Config.rotationSmooth * Time.unscaledDeltaTime).eulerAngles;
         }
 
         protected virtual void SaveToConfig()
