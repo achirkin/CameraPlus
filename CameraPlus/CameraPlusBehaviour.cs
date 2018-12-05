@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -9,6 +10,7 @@ namespace CameraPlus
 {
     public class CameraPlusBehaviour : MonoBehaviour
     {
+        protected readonly WaitUntil _waitForMainCamera = new WaitUntil(() => Camera.main);
         protected const int OnlyInThirdPerson = 3;
         protected const int OnlyInFirstPerson = 4;
 
@@ -188,6 +190,7 @@ namespace CameraPlus
 
                         _cam.targetTexture = null;
                         _screenCamera.SetRenderTexture(null);
+                        _screenCamera.SetCameraInfo(new Vector2(0,0), new Vector2(0,0), -1000);
 
                         _camRenderTexture.Release();
 
@@ -228,11 +231,18 @@ namespace CameraPlus
 
         protected virtual void SceneManager_activeSceneChanged(Scene from, Scene to)
         {
+            StartCoroutine(GetMainCamera());
             var pointer = Resources.FindObjectsOfTypeAll<VRPointer>().FirstOrDefault();
             if (pointer == null) return;
             if (_moverPointer) Destroy(_moverPointer);
             _moverPointer = pointer.gameObject.AddComponent<CameraMoverPointer>();
             _moverPointer.Init(this, _cameraCube);
+        }
+
+        protected IEnumerator GetMainCamera()
+        {
+            yield return _waitForMainCamera;
+            _mainCamera = Camera.main;
         }
 
         protected virtual void LateUpdate()
@@ -267,9 +277,6 @@ namespace CameraPlus
 
         protected virtual void Update()
         {
-            if (_mainCamera == null)
-                _mainCamera = Camera.main;
-
             if (Input.GetKeyDown(KeyCode.F1))
             {
                 ThirdPerson = !ThirdPerson;
