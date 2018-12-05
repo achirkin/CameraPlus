@@ -21,23 +21,21 @@ namespace CameraPlus
 
         public virtual void Init(CameraPlusBehaviour cameraPlus, Transform cameraCube)
         {
-            if (Instance) Destroy(Instance);
-            Instance = this;
             _cameraPlus = cameraPlus;
             _cameraCube = cameraCube;
-            _realPos = Plugin.Instance.Config.Position;
-            _realRot = Quaternion.Euler(Plugin.Instance.Config.Rotation);
+            _realPos = _cameraPlus.Config.Position;
+            _realRot = Quaternion.Euler(_cameraPlus.Config.Rotation);
             _vrPointer = GetComponent<VRPointer>();
         }
 
         protected virtual void OnEnable()
         {
-            Plugin.Instance.Config.ConfigChangedEvent += PluginOnConfigChangedEvent;
+            _cameraPlus.Config.ConfigChangedEvent += PluginOnConfigChangedEvent;
         }
 
         protected virtual void OnDisable()
         {
-            Plugin.Instance.Config.ConfigChangedEvent -= PluginOnConfigChangedEvent;
+            _cameraPlus.Config.ConfigChangedEvent -= PluginOnConfigChangedEvent;
         }
 
         protected virtual void PluginOnConfigChangedEvent(Config config)
@@ -85,10 +83,10 @@ namespace CameraPlus
             }
 
             _cameraPlus.ThirdPersonPos = Vector3.Lerp(_cameraCube.position, _realPos,
-                Plugin.Instance.Config.positionSmooth * Time.deltaTime);
+                _cameraPlus.Config.positionSmooth * Time.deltaTime);
 
             _cameraPlus.ThirdPersonRot = Quaternion.Slerp(_cameraCube.rotation, _realRot,
-                Plugin.Instance.Config.rotationSmooth * Time.deltaTime).eulerAngles;
+                _cameraPlus.Config.rotationSmooth * Time.deltaTime).eulerAngles;
         }
 
         protected virtual void SaveToConfig()
@@ -96,7 +94,7 @@ namespace CameraPlus
             var pos = _realPos;
             var rot = _realRot.eulerAngles;
 
-            var config = Plugin.Instance.Config;
+            var config = _cameraPlus.Config;
 
             config.posx = pos.x;
             config.posy = pos.y;

@@ -18,8 +18,8 @@ namespace CameraPlus
             set
             {
                 _thirdPerson = value;
-                _cameraCube.gameObject.SetActive(_thirdPerson);
-                _cameraPreviewQuad.gameObject.SetActive(_thirdPerson);
+                _cameraCube.gameObject.SetActive(_thirdPerson && Config.showThirdPersonCamera);
+                _cameraPreviewQuad.gameObject.SetActive(_thirdPerson && Config.showThirdPersonCamera);
 
                 if (value)
                 {
@@ -35,9 +35,10 @@ namespace CameraPlus
         }
 
         protected bool _thirdPerson;
-
         public Vector3 ThirdPersonPos;
         public Vector3 ThirdPersonRot;
+        public Config Config;
+
         protected RenderTexture _camRenderTexture;
         protected Material _previewMaterial;
         protected Camera _cam;
@@ -45,24 +46,27 @@ namespace CameraPlus
         protected ScreenCameraBehaviour _screenCamera;
         protected GameObject _cameraPreviewQuad;
         protected Camera _mainCamera = null;
+        protected CameraMoverPointer _moverPointer = null;
 
         protected int _prevScreenWidth;
         protected int _prevScreenHeight;
         protected int _prevAA;
         protected float _prevRenderScale;
+        protected int _prevLayer;
 
 
 
-        public virtual void Init(Camera mainCamera)
+        public virtual void Init(Config config)
         {
             DontDestroyOnLoad(gameObject);
             Console.WriteLine("[Camera Plus] Created new camera plus behaviour component!");
 
-            _mainCamera = mainCamera;
+            Config = config;
+            _mainCamera = Camera.main;
 
             XRSettings.showDeviceView = false;
 
-            Plugin.Instance.Config.ConfigChangedEvent += PluginOnConfigChangedEvent;
+            Config.ConfigChangedEvent += PluginOnConfigChangedEvent;
             SceneManager.activeSceneChanged += SceneManager_activeSceneChanged;
 
             var gameObj = Instantiate(_mainCamera.gameObject);
@@ -123,8 +127,8 @@ namespace CameraPlus
 
             if (ThirdPerson)
             {
-                ThirdPersonPos = Plugin.Instance.Config.Position;
-                ThirdPersonRot = Plugin.Instance.Config.Rotation;
+                ThirdPersonPos = Config.Position;
+                ThirdPersonRot = Config.Rotation;
 
                 transform.position = ThirdPersonPos;
                 transform.eulerAngles = ThirdPersonRot;
@@ -138,7 +142,7 @@ namespace CameraPlus
 
         protected virtual void OnDestroy()
         {
-            Plugin.Instance.Config.ConfigChangedEvent -= PluginOnConfigChangedEvent;
+            Config.ConfigChangedEvent -= PluginOnConfigChangedEvent;
             SceneManager.activeSceneChanged -= SceneManager_activeSceneChanged;
         }
 
@@ -149,7 +153,7 @@ namespace CameraPlus
 
         protected virtual void ReadConfig()
         {
-            ThirdPerson = Plugin.Instance.Config.thirdPerson;
+            ThirdPerson = Config.thirdPerson;
 
             if (!ThirdPerson)
             {
@@ -158,8 +162,8 @@ namespace CameraPlus
             }
             else
             {
-                ThirdPersonPos = Plugin.Instance.Config.Position;
-                ThirdPersonRot = Plugin.Instance.Config.Rotation;
+                ThirdPersonPos = Config.Position;
+                ThirdPersonRot = Config.Rotation;
             }
 
             CreateScreenRenderTexture();
@@ -168,9 +172,6 @@ namespace CameraPlus
 
         protected virtual void CreateScreenRenderTexture()
         {
-            _prevScreenWidth = Screen.width;
-            _prevScreenHeight = Screen.height;
-
             HMMainThreadDispatcher.instance.Enqueue(delegate
             {
                 var replace = false;
@@ -181,7 +182,7 @@ namespace CameraPlus
                 }
                 else
                 {
-                    if (Plugin.Instance.Config.antiAliasing != _prevAA || Plugin.Instance.Config.renderScale != _prevRenderScale)
+                    if (Config.antiAliasing != _prevAA || Config.renderScale != _prevRenderScale || Config.screenHeight != _prevScreenHeight || Config.screenWidth != _prevScreenWidth || Config.layer != _prevLayer)
                     {
                         replace = true;
 
@@ -190,8 +191,10 @@ namespace CameraPlus
 
                         _camRenderTexture.Release();
 
-                        _prevAA = Plugin.Instance.Config.antiAliasing;
-                        _prevRenderScale = Plugin.Instance.Config.renderScale;
+                        _prevAA = Config.antiAliasing;
+                        _prevRenderScale = Config.renderScale;
+                        _prevScreenHeight = Config.screenHeight;
+                        _prevScreenWidth = Config.screenWidth;
                     }
                 }
 
@@ -201,16 +204,18 @@ namespace CameraPlus
                     return;
                 }
 
-                GetScaledScreenResolution(Plugin.Instance.Config.renderScale, out var scaledWidth, out var scaledHeight);
+                GetScaledScreenResolution(Config.renderScale, out var scaledWidth, out var scaledHeight);
                 _camRenderTexture.width = scaledWidth;
                 _camRenderTexture.height = scaledHeight;
 
-                _camRenderTexture.antiAliasing = Plugin.Instance.Config.antiAliasing;
+                _camRenderTexture.useDynamicScale = false;
+                _camRenderTexture.antiAliasing = Config.antiAliasing;
                 _camRenderTexture.Create();
 
                 _cam.targetTexture = _camRenderTexture;
                 _previewMaterial.SetTexture("_MainTex", _camRenderTexture);
                 _screenCamera.SetRenderTexture(_camRenderTexture);
+                _screenCamera.SetCameraInfo(Config.ScreenPosition, Config.ScreenSize, Config.layer);
             });
         }
 
@@ -225,17 +230,13 @@ namespace CameraPlus
         {
             var pointer = Resources.FindObjectsOfTypeAll<VRPointer>().FirstOrDefault();
             if (pointer == null) return;
-            var movePointer = pointer.gameObject.AddComponent<CameraMoverPointer>();
-            movePointer.Init(this, _cameraCube);
+            if (_moverPointer) Destroy(_moverPointer);
+            _moverPointer = pointer.gameObject.AddComponent<CameraMoverPointer>();
+            _moverPointer.Init(this, _cameraCube);
         }
 
         protected virtual void LateUpdate()
         {
-            if (Screen.width != _prevScreenWidth || Screen.height != _prevScreenHeight)
-            {
-                CreateScreenRenderTexture();
-                Console.WriteLine("Created new render texture!");
-            }
             var camera = _mainCamera.transform;
 
             if (ThirdPerson)
@@ -248,10 +249,10 @@ namespace CameraPlus
             }
 
             transform.position = Vector3.Lerp(transform.position, camera.position,
-                Plugin.Instance.Config.positionSmooth * Time.deltaTime);
+                Config.positionSmooth * Time.deltaTime);
 
             transform.rotation = Quaternion.Slerp(transform.rotation, camera.rotation,
-                Plugin.Instance.Config.rotationSmooth * Time.deltaTime);
+                Config.rotationSmooth * Time.deltaTime);
         }
 
         protected virtual void SetFOV()
@@ -259,7 +260,7 @@ namespace CameraPlus
             if (_cam == null) return;
             var fov = (float)(57.2957801818848 *
                                (2.0 * Mathf.Atan(
-                                    Mathf.Tan((float)(Plugin.Instance.Config.fov * (Math.PI / 180.0) * 0.5)) /
+                                    Mathf.Tan((float)(Config.fov * (Math.PI / 180.0) * 0.5)) /
                                     _mainCamera.aspect)));
             _cam.fieldOfView = fov;
         }
@@ -279,12 +280,12 @@ namespace CameraPlus
                 }
                 else
                 {
-                    ThirdPersonPos = Plugin.Instance.Config.Position;
-                    ThirdPersonRot = Plugin.Instance.Config.Rotation;
+                    ThirdPersonPos = Config.Position;
+                    ThirdPersonRot = Config.Rotation;
                 }
 
-                Plugin.Instance.Config.thirdPerson = ThirdPerson;
-                Plugin.Instance.Config.Save();
+                Config.thirdPerson = ThirdPerson;
+                Config.Save();
             }
         }
     }

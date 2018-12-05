@@ -4,29 +4,53 @@ using UnityEngine;
 
 namespace CameraPlus
 {
-	public class Config
-	{
-		public string FilePath { get; }
-		public float fov = 90;
-		public int antiAliasing = 2;
-		public float renderScale = 1;
-		public float positionSmooth = 10;
-		public float rotationSmooth = 5;
-		
-		public bool thirdPerson = false;
-		
-		public float posx;
-		public float posy = 2;
-		public float posz = -1.2f;
+    public class Config
+    {
+        public string FilePath { get; }
+        public float fov = 90;
+        public int antiAliasing = 2;
+        public float renderScale = 1;
+        public float positionSmooth = 10;
+        public float rotationSmooth = 5;
 
-		public float angx = 15;
-		public float angy;
-		public float angz;
+        public bool thirdPerson = false;
+        public bool showThirdPersonCamera = true;
 
-		public event Action<Config> ConfigChangedEvent;
-		
-		private readonly FileSystemWatcher _configWatcher;
-		private bool _saving;
+        public float posx;
+        public float posy = 2;
+        public float posz = -1.2f;
+
+        public float angx = 15;
+        public float angy;
+        public float angz;
+
+        public int screenWidth = Screen.width;
+        public int screenHeight = Screen.height;
+        public int screenPosX;
+        public int screenPosY;
+
+        public int layer = -1000;
+
+        public event Action<Config> ConfigChangedEvent;
+
+        private readonly FileSystemWatcher _configWatcher;
+        private bool _saving;
+
+        public Vector2 ScreenPosition
+        {
+            get
+            {
+                return new Vector2(screenPosX, screenPosY);
+            }
+        }
+
+        public Vector2 ScreenSize
+        {
+            get
+            {
+                return new Vector2(screenWidth, screenHeight);
+            }
+        }
 		
 		public Vector3 Position
 		{
@@ -45,7 +69,10 @@ namespace CameraPlus
 		{
 			FilePath = filePath;
 
-			if (File.Exists(FilePath))
+            if (!Directory.Exists(Path.GetDirectoryName(FilePath)))
+                Directory.CreateDirectory(Path.GetDirectoryName(FilePath));
+
+            if (File.Exists(FilePath))
 			{
 				Load();
 				var text = File.ReadAllText(FilePath);
@@ -69,11 +96,11 @@ namespace CameraPlus
 			{
 				Save();
 			}
-			
-			_configWatcher = new FileSystemWatcher(Environment.CurrentDirectory)
+
+            _configWatcher = new FileSystemWatcher(Path.GetDirectoryName(FilePath))
 			{
 				NotifyFilter = NotifyFilters.LastWrite,
-				Filter = "cameraplus.cfg",
+				Filter = Path.GetFileName(FilePath),
 				EnableRaisingEvents = true
 			};
 			_configWatcher.Changed += ConfigWatcherOnChanged;

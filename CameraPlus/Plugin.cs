@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using IllusionPlugin;
 using UnityEngine;
@@ -10,10 +11,8 @@ namespace CameraPlus
 {
     public class Plugin : IPlugin
     {
-        public readonly Config Config = new Config(Path.Combine(Environment.CurrentDirectory, "cameraplus.cfg"));
-        private readonly WaitForSecondsRealtime _waitForSecondsRealtime = new WaitForSecondsRealtime(0.1f);
-
-        private CameraPlusBehaviour _cameraPlus;
+        public Dictionary<string, CameraPlusInstance> Cameras = new Dictionary<string, CameraPlusInstance>();
+        
         private bool _init;
 
         public static Plugin Instance { get; private set; }
@@ -24,16 +23,34 @@ namespace CameraPlus
         {
             if (_init) return;
             _init = true;
-
             Instance = this;
 
-            SceneManager.sceneLoaded += SceneManagerOnSceneLoaded;
+            Cameras.Add("cameraplus.cfg", new CameraPlusInstance(Environment.CurrentDirectory + "\\UserData\\CameraPlus\\cameraplus.cfg"));
+
+            SceneManager.activeSceneChanged += SceneManager_activeSceneChanged;
+        }
+
+        private void SceneManager_activeSceneChanged(Scene arg0, Scene arg1)
+        {
+            string[] files = Directory.GetFiles(Environment.CurrentDirectory + "\\UserData\\CameraPlus");
+            foreach (string filePath in files)
+            {
+                string fileName = Path.GetFileName(filePath);
+                if (fileName != "cameraplus.cfg" && !Cameras.ContainsKey(fileName))
+                {
+                    Console.WriteLine($"[Camera Plus] Found config {filePath}!");
+                    Cameras.Add(fileName, new CameraPlusInstance(filePath));
+                }
+            }
         }
 
         public void OnApplicationQuit()
         {
-            SceneManager.sceneLoaded -= SceneManagerOnSceneLoaded;
-            Config.Save();
+            SceneManager.activeSceneChanged -= SceneManager_activeSceneChanged;
+            foreach (CameraPlusInstance instance in Cameras.Values)
+            {
+                instance.Config.Save();
+            }
         }
 
         public void OnLevelWasLoaded(int level)
@@ -50,29 +67,6 @@ namespace CameraPlus
 
         public void OnFixedUpdate()
         {
-        }
-
-        private void SceneManagerOnSceneLoaded(Scene scene, LoadSceneMode mode)
-        {
-            SharedCoroutineStarter.instance.StartCoroutine(DelayedOnSceneLoaded(scene));
-        }
-
-        private IEnumerator DelayedOnSceneLoaded(Scene scene)
-        {
-            yield return _waitForSecondsRealtime;
-
-            if (scene.buildIndex < 1) yield break;
-            if (_cameraPlus != null) yield break;
-
-            var mainCamera = Camera.main;
-            if (mainCamera == null)
-            {
-                yield break;
-            }
-
-            var gameObj = new GameObject("CameraPlus");
-            _cameraPlus = gameObj.AddComponent<CameraPlusBehaviour>();
-            _cameraPlus.Init(mainCamera);
         }
     }
 }

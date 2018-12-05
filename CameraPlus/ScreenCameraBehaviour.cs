@@ -17,6 +17,12 @@ namespace CameraPlus
             _renderTexture = renderTexture;
         }
 
+        public void SetCameraInfo(Vector2 position, Vector2 size, int layer)
+        {
+            _cam.pixelRect = new Rect(position, size);
+            _cam.depth = layer;
+        }
+
         private void Awake()
         {
             Console.WriteLine("[Camera Plus] Created new screen camera behaviour component!");
@@ -25,7 +31,6 @@ namespace CameraPlus
             _cam = gameObject.AddComponent<Camera>();
             _cam.clearFlags = CameraClearFlags.Nothing;
             _cam.cullingMask = 0;
-            _cam.depth = -1000;
             _cam.stereoTargetEye = StereoTargetEyeMask.None;
         }
 
