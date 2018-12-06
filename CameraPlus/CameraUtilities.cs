@@ -14,13 +14,17 @@ namespace CameraPlus
             return Plugin.Instance.Cameras.Keys.Where(c => c == cameraName + ".cfg").Count() > 0;
         }
 
-        public static void AddNewCamera(string cameraName)
+        public static void AddNewCamera(string cameraName, Config Config = null)
         {
             string path = Environment.CurrentDirectory + "\\UserData\\CameraPlus\\" + cameraName + ".cfg";
             if (!File.Exists(path))
             {
-                Config config = new Config(path);
-                foreach (CameraPlusInstance c in Plugin.Instance.Cameras.Values)
+                Config config = null;
+                if (Config != null)
+                    File.Copy(Config.FilePath, path, true);
+
+                config = new Config(path);
+                foreach (CameraPlusInstance c in Plugin.Instance.Cameras.Values.OrderBy(i => i.Config.layer))
                 {
                     if (c.Config.layer > config.layer)
                         config.layer += (c.Config.layer - config.layer);

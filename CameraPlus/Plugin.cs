@@ -19,7 +19,7 @@ namespace CameraPlus
         private bool _init;
         public static Plugin Instance { get; private set; }
         public string Name => "CameraPlus";
-        public string Version => "v2.1.0b4";
+        public string Version => "v2.1.0b5";
         
         public void OnApplicationStart()
         {
@@ -35,33 +35,19 @@ namespace CameraPlus
 
         public void SceneManager_activeSceneChanged(Scene from, Scene to)
         {
-            Plugin.Log($"Active scene changed from \"{from.name}\" to \"{to.name}\"");
+            // If any new cameras have been added to the config folder, render them
+            CameraUtilities.ReloadCameras();
 
-            try
+            // Trigger our activeSceneChanged event for each camera, because subscribing to the events from within the CameraPlusBehaviour component yields inconsistent results.
+            foreach (CameraPlusInstance c in Cameras.Values)
             {
-                // If any new cameras have been added to the config folder, render them
-                CameraUtilities.ReloadCameras();
-
-                // Trigger our activeSceneChanged event for each camera, because subscribing to the events from within the CameraPlusBehaviour component yields inconsistent results.
-                foreach (CameraPlusInstance c in Cameras.Values)
-                {
-                    c.Instance.SceneManager_activeSceneChanged(from, to);
-                }
-
-            }
-            catch (Exception e)
-            {
-                Plugin.Log("Exception in OnActiveSceneChanged!");
+                c.Instance.SceneManager_activeSceneChanged(from, to);
             }
         }
 
         public void OnApplicationQuit()
         {
             SceneManager.activeSceneChanged -= SceneManager_activeSceneChanged;
-            foreach (CameraPlusInstance instance in Cameras.Values)
-            {
-                instance.Config.Save();
-            }
         }
 
         public void OnLevelWasLoaded(int level)
