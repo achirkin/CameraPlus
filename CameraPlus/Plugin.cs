@@ -37,19 +37,23 @@ namespace CameraPlus
             try
             {
                 string[] files = Directory.GetFiles(Environment.CurrentDirectory + "\\UserData\\CameraPlus");
-                foreach (string filePath in files)
+                if (files.Length > 0)
                 {
-                    string fileName = Path.GetFileName(filePath);
-                    if (fileName.EndsWith(".cfg") && !Cameras.ContainsKey(fileName))
+                    foreach (string filePath in files)
                     {
-                        Console.WriteLine($"[Camera Plus] Found config {filePath}!");
-                        Cameras.TryAdd(fileName, new CameraPlusInstance(filePath));
+                        string fileName = Path.GetFileName(filePath);
+                        if (fileName.EndsWith(".cfg") && !Cameras.ContainsKey(fileName))
+                        {
+                            Console.WriteLine($"[Camera Plus] Found config {filePath}!");
+                            Cameras.TryAdd(fileName, new CameraPlusInstance(filePath));
+                        }
                     }
+
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine("Exception while reloading cameras! {e.ToString()}");
+                Console.WriteLine($"Exception while reloading cameras! {e.ToString()}");
             }
         }
 
@@ -60,11 +64,22 @@ namespace CameraPlus
                 new Config(path);
         }
 
-        public void RemoveCamera(CameraPlusBehaviour instance)
+        public bool RemoveCamera(CameraPlusBehaviour instance)
         {
-            Plugin.Instance.Cameras.TryRemove(Plugin.Instance.Cameras.Where(c => c.Value.Instance == instance)?.First().Key, out var removedEntry);
-            if (removedEntry != null)
-                File.Delete(removedEntry.Config.FilePath);
+            try
+            {
+                Cameras.TryRemove(Plugin.Instance.Cameras.Where(c => c.Value.Instance == instance && c.Key != "cameraplus.cfg")?.First().Key, out var removedEntry);
+                if (removedEntry != null)
+                {
+                    File.Delete(removedEntry.Config.FilePath);
+                    return true;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Can't remove cam!");
+            }
+            return false;
         }
 
         public bool CameraExists(string cameraName)

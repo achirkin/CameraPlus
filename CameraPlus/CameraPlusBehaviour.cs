@@ -80,6 +80,14 @@ namespace CameraPlus
             Console.WriteLine("[Camera Plus] Created new camera plus behaviour component!");
 
             Config = config;
+
+            StartCoroutine(DelayedInit());
+        }
+
+        protected IEnumerator DelayedInit()
+        {
+            yield return _waitForMainCamera;
+
             _mainCamera = Camera.main;
 
             XRSettings.showDeviceView = false;
@@ -107,7 +115,7 @@ namespace CameraPlus
             {
                 _previewMaterial = new Material(Shader.Find("Hidden/BlitCopyWithDepth"));
             }
-            
+
             _cam = gameObj.GetComponent<Camera>();
             _cam.stereoTargetEye = StereoTargetEyeMask.None;
             _cam.enabled = true;
@@ -173,7 +181,8 @@ namespace CameraPlus
             if (_camRenderTexture)
                 _camRenderTexture.Release();
 
-            menuStrip?.Dispose();
+            if(contextMenuOpen)
+                menuStrip.Dispose();
         }
 
         protected virtual void PluginOnConfigChangedEvent(Config config)
@@ -313,7 +322,7 @@ namespace CameraPlus
             return true;
         }
 
-        public bool IsTopmostRenderAreaWithinArea(Vector2 mousePos)
+        public bool IsTopmostRenderAreaAtPos(Vector2 mousePos)
         {
             if (!IsWithinRenderArea(mousePos, Config)) return false;
             foreach (CameraPlusInstance c in Plugin.Instance.Cameras.Values.ToArray())
@@ -385,7 +394,7 @@ namespace CameraPlus
             }
 
             Vector3 mousePos = Input.mousePosition;
-            if (!mouseHeld && !IsTopmostRenderAreaWithinArea(mousePos)) return;
+            if (!mouseHeld && !IsTopmostRenderAreaAtPos(mousePos)) return;
 
             if (holdingLeftClick)
             {
@@ -497,11 +506,13 @@ namespace CameraPlus
                             Console.WriteLine("Removing camera!");
                             lock (Plugin.Instance.Cameras)
                             {
-                                Plugin.Instance.RemoveCamera(this);
-                                CreateScreenRenderTexture();
-                                CloseContextMenu();
-                                GL.Clear(false, true, Color.black, 0);
-                                Destroy(this.gameObject);
+                                if (Plugin.Instance.RemoveCamera(this))
+                                {
+                                    CreateScreenRenderTexture();
+                                    CloseContextMenu();
+                                    GL.Clear(false, true, Color.black, 0);
+                                    Destroy(this.gameObject);
+                                }
                             }
                         });
                         contextMenuOpen = true;
