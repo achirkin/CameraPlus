@@ -371,7 +371,7 @@ namespace CameraPlus
             }
             _contextMenuOpen = false;
         }
-
+        
         protected virtual void Update()
         {
             if (GetActiveWindow() == System.IntPtr.Zero && _wasWindowActive)
@@ -463,6 +463,7 @@ namespace CameraPlus
                     if (_menuStrip == null)
                     {
                         _menuStrip = new ContextMenuStrip();
+
                         _menuStrip.Items.Add("Add New Camera", null, (p1, p2) =>
                         {
                             lock (Plugin.Instance.Cameras)
@@ -471,14 +472,11 @@ namespace CameraPlus
                                 string cameraName = String.Empty;
                                 while (true)
                                 {
-                                    restart:
                                     index++;
                                     cameraName = $"customcamera{index.ToString()}";
                                     Plugin.Log($"Checking {cameraName}");
                                     if (!CameraUtilities.CameraExists(cameraName))
                                         break;
-                                    else
-                                        goto restart;
                                 }
                                 Plugin.Log($"Adding {cameraName}");
                                 CameraUtilities.AddNewCamera(cameraName);
@@ -601,6 +599,7 @@ namespace CameraPlus
                             CreateScreenRenderTexture();
                         };
                         _menuStrip.Items.Add(yBox);
+                        
 
                         _contextMenuOpen = true;
                     }
