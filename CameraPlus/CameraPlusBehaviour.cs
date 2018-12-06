@@ -75,6 +75,11 @@ namespace CameraPlus
         protected Vector2 _lastGrabPos = new Vector2(0, 0);
         protected Vector2 _initialTopRightPos = new Vector2(0, 0);
         protected ContextMenuStrip _menuStrip = new ContextMenuStrip();
+        protected ToolStripMenuItem _layoutMenu;
+        protected ToolStripMenuItem _extrasMenu;
+
+        [DllImport("user32.dll")]
+        static extern System.IntPtr GetActiveWindow();
 
         public virtual void Init(Config config)
         {
@@ -85,21 +90,7 @@ namespace CameraPlus
 
             StartCoroutine(DelayedInit());
         }
-
-        // links to external dll functions
-        [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
-        private static extern bool SetWindowPos(System.IntPtr hwnd, int hWndInsertAfter, int x, int Y, int cx, int cy, int wFlags);
-        [DllImport("user32.dll")]
-        static extern System.IntPtr GetActiveWindow();
-
-        public static void SetPosition(System.IntPtr ptr, int x, int y, int resX = 0, int resY = 0)
-        {
-            SetWindowPos(ptr, 0, x, y, resX, resY, resX * resY == 0 ? 1 : 0);
-        }
-
-        System.IntPtr ptr = System.IntPtr.Zero;     // varibale for save hwnd
-        
-
+     
         protected IEnumerator DelayedInit()
         {
             yield return _waitForMainCamera;
@@ -183,21 +174,20 @@ namespace CameraPlus
         protected virtual void OnDestroy()
         {
             Config.ConfigChangedEvent -= PluginOnConfigChangedEvent;
-
-            if (_screenCamera)
+            _camRenderTexture?.Release();
+            foreach (ToolStripItemCollection c in _menuStrip.Items)
+            {
+                foreach (ToolStripItem t in c)
+                {
+                    t.Dispose();
+                }
+            }
+            if(_screenCamera)
                 Destroy(_screenCamera.gameObject);
-
-            if (_cameraCubeGO)
+            if(_cameraCubeGO)
                 Destroy(_cameraCubeGO);
-
-            if (_quad)
+            if(_quad)
                 Destroy(_quad);
-
-            if (_camRenderTexture)
-                _camRenderTexture.Release();
-
-            if(_contextMenuOpen)
-                _menuStrip.Dispose();
         }
 
         protected virtual void PluginOnConfigChangedEvent(Config config)
@@ -354,7 +344,7 @@ namespace CameraPlus
                     return false;
                 }
 
-                if (c.Instance._mouseHeld && (c.Instance._isMoving || c.Instance._isResizing))
+                if (c.Instance._mouseHeld && (c.Instance._isMoving || c.Instance._isResizing || c.Instance._contextMenuOpen))
                 {
                     return false;
                 }
@@ -370,6 +360,29 @@ namespace CameraPlus
                 _menuStrip = null;
             }
             _contextMenuOpen = false;
+        }
+
+        protected IEnumerator Spawn38Cameras()
+        {
+            lock (Plugin.Instance.Cameras)
+            {
+                for (int i = 0; i < 38; i++)
+                {
+                    int index = 0;
+                    string cameraName = String.Empty;
+                    while (true)
+                    {
+                        index++;
+                        cameraName = $"customcamera{index.ToString()}";
+                        if (!CameraUtilities.CameraExists(cameraName))
+                            break;
+                    }
+                    CameraUtilities.AddNewCamera(cameraName, null, true);
+                    CameraUtilities.ReloadCameras();
+
+                    yield return null;
+                }
+            }
         }
         
         protected virtual void Update()
@@ -407,6 +420,7 @@ namespace CameraPlus
             bool holdingLeftClick = Input.GetMouseButton(0);
             bool holdingRightClick = Input.GetMouseButton(1);
 
+            // Close the context menu when we click anywhere within the bounds of the application
             if (!_mouseHeld && (holdingLeftClick || holdingRightClick))
             {
                 if (_menuStrip != null && Input.mousePosition.x > 0 && Input.mousePosition.x < Screen.width && Input.mousePosition.y > 0 && Input.mousePosition.y < Screen.height)
@@ -458,157 +472,167 @@ namespace CameraPlus
             }
             else if (holdingRightClick)
             {
-                if (!_mouseHeld)
+                if (_mouseHeld) return;
+                if (_menuStrip == null)
                 {
-                    if (_menuStrip == null)
+                    _menuStrip = new ContextMenuStrip();
+                    // Adds a new camera into the scene
+                    _menuStrip.Items.Add("Add New Camera", null, (p1, p2) =>
                     {
-                        _menuStrip = new ContextMenuStrip();
+                        lock (Plugin.Instance.Cameras)
+                        {
+                            int index = 0;
+                            string cameraName = String.Empty;
+                            while (true)
+                            {
+                                index++;
+                                cameraName = $"customcamera{index.ToString()}";
+                                if (!CameraUtilities.CameraExists(cameraName))
+                                    break;
+                            }
+                            Plugin.Log($"Adding new config with name {cameraName}.cfg");
+                            CameraUtilities.AddNewCamera(cameraName);
+                            CameraUtilities.ReloadCameras();
+                            CloseContextMenu();
+                        }
+                    });
 
-                        _menuStrip.Items.Add("Add New Camera", null, (p1, p2) =>
+                    // Instantiates an exact copy of the currently selected camera
+                    _menuStrip.Items.Add("Duplicate Selected Camera", null, (p1, p2) =>
+                    {
+                        lock (Plugin.Instance.Cameras)
                         {
-                            lock (Plugin.Instance.Cameras)
+                            int index = 0;
+                            string cameraName = String.Empty;
+                            while (true)
                             {
-                                int index = 0;
-                                string cameraName = String.Empty;
-                                while (true)
-                                {
-                                    index++;
-                                    cameraName = $"customcamera{index.ToString()}";
-                                    Plugin.Log($"Checking {cameraName}");
-                                    if (!CameraUtilities.CameraExists(cameraName))
-                                        break;
-                                }
-                                Plugin.Log($"Adding {cameraName}");
-                                CameraUtilities.AddNewCamera(cameraName);
-                                CameraUtilities.ReloadCameras();
+                                restart:
+                                index++;
+                                cameraName = $"customcamera{index.ToString()}";
+                                Plugin.Log($"Checking {cameraName}");
+                                if (!CameraUtilities.CameraExists(cameraName))
+                                    break;
+                                else
+                                    goto restart;
+                            }
+                            Plugin.Log($"Adding {cameraName}");
+                            CameraUtilities.AddNewCamera(cameraName, Config);
+                            CameraUtilities.ReloadCameras();
+                            CloseContextMenu();
+                        }
+                    });
+
+                    // Removes the selected camera from the scene, and deletes the config associated with it
+                    _menuStrip.Items.Add("Remove Selected Camera", null, (p1, p2) =>
+                    {
+                        lock (Plugin.Instance.Cameras)
+                        {
+                            if (CameraUtilities.RemoveCamera(this))
+                            {
+                                CreateScreenRenderTexture();
                                 CloseContextMenu();
+                                GL.Clear(false, true, Color.black, 0);
+                                Destroy(this.gameObject);
                             }
-                        });
-                        _menuStrip.Items.Add("Copy Selected Camera", null, (p1, p2) =>
+                            else MessageBox.Show("Cannot remove main camera!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    });
+                    _menuStrip.Items.Add(new ToolStripSeparator());
+
+                    // Toggles between third/first person
+                    _menuStrip.Items.Add(Config.thirdPerson ? "First Person" : "Third Person", null, (p1, p2) =>
+                    {
+                        Config.thirdPerson = !Config.thirdPerson;
+                        ThirdPerson = Config.thirdPerson;
+                        CreateScreenRenderTexture();
+                        CloseContextMenu();
+                    });
+                    if (Config.thirdPerson)
+                    {
+                        // Hides/unhides the third person camera that appears when a camera is in third person mode
+                        _menuStrip.Items.Add(Config.showThirdPersonCamera ? "Hide Third Person Camera" : "Show Third Person Camera", null, (p1, p2) =>
                         {
-                            lock (Plugin.Instance.Cameras)
-                            {
-                                int index = 0;
-                                string cameraName = String.Empty;
-                                while (true)
-                                {
-                                    restart:
-                                    index++;
-                                    cameraName = $"customcamera{index.ToString()}";
-                                    Plugin.Log($"Checking {cameraName}");
-                                    if (!CameraUtilities.CameraExists(cameraName))
-                                        break;
-                                    else
-                                        goto restart;
-                                }
-                                Plugin.Log($"Adding {cameraName}");
-                                CameraUtilities.AddNewCamera(cameraName, Config);
-                                CameraUtilities.ReloadCameras();
-                                CloseContextMenu();
-                            }
-                        });
-                        _menuStrip.Items.Add("Remove Selected Camera", null, (p1, p2) =>
-                        {
-                            Plugin.Log("Removing camera!");
-                            lock (Plugin.Instance.Cameras)
-                            {
-                                if (CameraUtilities.RemoveCamera(this))
-                                {
-                                    CreateScreenRenderTexture();
-                                    CloseContextMenu();
-                                    GL.Clear(false, true, Color.black, 0);
-                                    Destroy(this.gameObject);
-                                }
-                                else MessageBox.Show("Cannot remove main camera!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            }
-                        });
-                        _menuStrip.Items.Add(new ToolStripSeparator());
-                        _menuStrip.Items.Add(Config.thirdPerson ? "First Person" : "Third Person", null, (p1, p2) =>
-                        {
-                            Plugin.Log("Toggling third person!");
-                            Config.thirdPerson = !Config.thirdPerson;
+                            Config.showThirdPersonCamera = !Config.showThirdPersonCamera;
                             ThirdPerson = Config.thirdPerson;
                             CreateScreenRenderTexture();
                             CloseContextMenu();
                         });
-                        if (Config.thirdPerson)
-                        {
-                            _menuStrip.Items.Add(Config.showThirdPersonCamera ? "Hide Third Person Camera" : "Show Third Person Camera", null, (p1, p2) =>
-                            {
-                                Plugin.Log("Toggling third person camera!");
-                                Config.showThirdPersonCamera = !Config.showThirdPersonCamera;
-                                ThirdPerson = Config.thirdPerson;
-                                CreateScreenRenderTexture();
-                                CloseContextMenu();
-                            });
-                        }
-                        
-                        _menuStrip.Items.Add(new ToolStripSeparator());
-                        _menuStrip.Items.Add(new ToolStripLabel("Layer"));
-                        var layerBox = new ToolStripNumberControl();
-                        layerBox.Maximum = int.MaxValue;
-                        layerBox.Minimum = int.MinValue;
-                        layerBox.Value = Config.layer;
-                        layerBox.ValueChanged += (sender, args) => {
-                            Config.layer = (int)layerBox.Value;
-                            CreateScreenRenderTexture();
-                        };
-                        _menuStrip.Items.Add(layerBox);
-
-                        _menuStrip.Items.Add(new ToolStripSeparator());
-                        _menuStrip.Items.Add(new ToolStripLabel("Size"));
-                        var widthBox = new ToolStripNumberControl();
-                        widthBox.Maximum = Screen.width;
-                        widthBox.Minimum = 0;
-                        widthBox.Value = Config.screenWidth;
-                        widthBox.ValueChanged += (sender, args) => {
-                            Config.screenWidth = (int)widthBox.Value;
-                            CreateScreenRenderTexture();
-                        };
-                        _menuStrip.Items.Add(widthBox);
-
-                        var heightBox = new ToolStripNumberControl();
-                        heightBox.Maximum = Screen.height;
-                        heightBox.Minimum = 0;
-                        heightBox.Value = Config.screenHeight;
-                        heightBox.ValueChanged += (sender, args) => {
-                            Config.screenHeight = (int)heightBox.Value;
-                            CreateScreenRenderTexture();
-                        };
-                        _menuStrip.Items.Add(heightBox);
-
-
-                        _menuStrip.Items.Add(new ToolStripSeparator());
-                        _menuStrip.Items.Add(new ToolStripLabel("Position"));
-                        var xBox = new ToolStripNumberControl();
-                        xBox.Maximum = Screen.width;
-                        xBox.Minimum = 0;
-                        xBox.Value = Config.screenPosX;
-                        xBox.ValueChanged += (sender, args) => {
-                            Config.screenPosX = (int)xBox.Value;
-                            CreateScreenRenderTexture();
-                        };
-                        _menuStrip.Items.Add(xBox);
-
-                        var yBox = new ToolStripNumberControl();
-                        yBox.Maximum = Screen.height;
-                        yBox.Minimum = 0;
-                        yBox.Value = Config.screenPosY;
-                        yBox.ValueChanged += (sender, args) => {
-                            Config.screenPosY = (int)yBox.Value;
-                            CreateScreenRenderTexture();
-                        };
-                        _menuStrip.Items.Add(yBox);
-                        
-
-                        _contextMenuOpen = true;
                     }
-                    if (_menuStrip != null)
+                    _menuStrip.Items.Add(new ToolStripSeparator());
+                    
+                    _layoutMenu = new ToolStripMenuItem("Layout");
+                    // Sets the layer associated with the current camera
+                    _layoutMenu.DropDownItems.Add(new ToolStripLabel("Layer"));
+                    var layerBox = new ToolStripNumberControl();
+                    layerBox.Maximum = int.MaxValue;
+                    layerBox.Minimum = int.MinValue;
+                    layerBox.Value = Config.layer;
+                    layerBox.ValueChanged += (sender, args) => {
+                        Config.layer = (int)layerBox.Value;
+                        CreateScreenRenderTexture();
+                    };
+                    _layoutMenu.DropDownItems.Add(layerBox);
+
+                    // Sets the size of the current cameras pixelrect
+                    _layoutMenu.DropDownItems.Add(new ToolStripLabel("Size"));
+                    var widthBox = new ToolStripNumberControl();
+                    widthBox.Maximum = Screen.width;
+                    widthBox.Minimum = 0;
+                    widthBox.Value = Config.screenWidth;
+                    widthBox.ValueChanged += (sender, args) => {
+                        Config.screenWidth = (int)widthBox.Value;
+                        CreateScreenRenderTexture();
+                    };
+                    _layoutMenu.DropDownItems.Add(widthBox);
+                    var heightBox = new ToolStripNumberControl();
+                    heightBox.Maximum = Screen.height;
+                    heightBox.Minimum = 0;
+                    heightBox.Value = Config.screenHeight;
+                    heightBox.ValueChanged += (sender, args) => {
+                        Config.screenHeight = (int)heightBox.Value;
+                        CreateScreenRenderTexture();
+                    };
+                    _layoutMenu.DropDownItems.Add(heightBox);
+
+                    // Set the location of the current cameras pixelrect
+                    _layoutMenu.DropDownItems.Add(new ToolStripLabel("Position"));
+                    var xBox = new ToolStripNumberControl();
+                    xBox.Maximum = Screen.width;
+                    xBox.Minimum = 0;
+                    xBox.Value = Config.screenPosX;
+                    xBox.ValueChanged += (sender, args) => {
+                        Config.screenPosX = (int)xBox.Value;
+                        CreateScreenRenderTexture();
+                    };
+                    _layoutMenu.DropDownItems.Add(xBox);
+                    var yBox = new ToolStripNumberControl();
+                    yBox.Maximum = Screen.height;
+                    yBox.Minimum = 0;
+                    yBox.Value = Config.screenPosY;
+                    yBox.ValueChanged += (sender, args) => {
+                        Config.screenPosY = (int)yBox.Value;
+                        CreateScreenRenderTexture();
+                    };
+                    _layoutMenu.DropDownItems.Add(yBox);
+                    _menuStrip.Items.Add(_layoutMenu);
+                        
+                    // Extras submenu
+                    _extrasMenu = new ToolStripMenuItem("Extras");
+                    // Just the right number...
+                    _extrasMenu.DropDownItems.Add("Spawn 38 Cameras", null, (p1, p2) =>
                     {
-                        _menuStrip.SetBounds(Cursor.Position.X, Cursor.Position.Y, 0, 0);
-                        if (!_menuStrip.Visible)
-                            _menuStrip.Show();
-                    }
+                        StartCoroutine(Spawn38Cameras());
+                        CloseContextMenu();
+                    });
+                    _menuStrip.Items.Add(_extrasMenu);
+                        
+                    _contextMenuOpen = true;
+                }
+                if (_menuStrip != null)
+                {
+                    _menuStrip.SetBounds(Cursor.Position.X, Cursor.Position.Y, 0, 0);
+                    if (!_menuStrip.Visible)
+                        _menuStrip.Show();
                 }
                 _mouseHeld = true;
             }
