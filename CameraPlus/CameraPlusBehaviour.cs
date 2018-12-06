@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -75,8 +76,7 @@ namespace CameraPlus
         protected Vector2 _lastGrabPos = new Vector2(0, 0);
         protected Vector2 _initialTopRightPos = new Vector2(0, 0);
         protected ContextMenuStrip _menuStrip = new ContextMenuStrip();
-        protected ToolStripMenuItem _layoutMenu;
-        protected ToolStripMenuItem _extrasMenu;
+        protected List<ToolStripItem> _controlTracker = new List<ToolStripItem>();
 
         [DllImport("user32.dll")]
         static extern System.IntPtr GetActiveWindow();
@@ -170,23 +170,21 @@ namespace CameraPlus
 
             SceneManager_activeSceneChanged(new Scene(), new Scene());
         }
-
+        
         protected virtual void OnDestroy()
         {
             Config.ConfigChangedEvent -= PluginOnConfigChangedEvent;
-            _camRenderTexture?.Release();
-            foreach (ToolStripItemCollection c in _menuStrip.Items)
-            {
-                foreach (ToolStripItem t in c)
-                {
-                    t.Dispose();
-                }
-            }
-            if(_screenCamera)
+
+            // Close our context menu if its open, and destroy all associated controls, otherwise the game will lock up
+            CloseContextMenu();
+
+            _camRenderTexture.Release();
+
+            if (_screenCamera)
                 Destroy(_screenCamera.gameObject);
-            if(_cameraCubeGO)
+            if (_cameraCubeGO)
                 Destroy(_cameraCubeGO);
-            if(_quad)
+            if (_quad)
                 Destroy(_quad);
         }
 
@@ -356,6 +354,14 @@ namespace CameraPlus
         {
             if (_menuStrip != null)
             {
+                _menuStrip.Close();
+                _menuStrip.Items.Clear();
+                foreach (ToolStripItem item in _controlTracker)
+                {
+                    if (item is ToolStripMenuItem)
+                        (item as ToolStripMenuItem).DropDownItems.Clear();
+                    item.Dispose();
+                }
                 _menuStrip.Dispose();
                 _menuStrip = null;
             }
@@ -559,65 +565,77 @@ namespace CameraPlus
                         });
                     }
                     _menuStrip.Items.Add(new ToolStripSeparator());
-                    
-                    _layoutMenu = new ToolStripMenuItem("Layout");
+
+                    var _layoutMenu = new ToolStripMenuItem("Layout");
+                    _controlTracker.Add(_layoutMenu);
                     // Sets the layer associated with the current camera
                     _layoutMenu.DropDownItems.Add(new ToolStripLabel("Layer"));
-                    var layerBox = new ToolStripNumberControl();
-                    layerBox.Maximum = int.MaxValue;
-                    layerBox.Minimum = int.MinValue;
-                    layerBox.Value = Config.layer;
-                    layerBox.ValueChanged += (sender, args) => {
-                        Config.layer = (int)layerBox.Value;
+                    var _layerBox = new ToolStripNumberControl();
+                    _controlTracker.Add(_layerBox);
+                    _layerBox.Maximum = int.MaxValue;
+                    _layerBox.Minimum = int.MinValue;
+                    _layerBox.Value = Config.layer;
+                    _layerBox.ValueChanged += (sender, args) =>
+                    {
+                        Config.layer = (int)_layerBox.Value;
                         CreateScreenRenderTexture();
                     };
-                    _layoutMenu.DropDownItems.Add(layerBox);
+                    _layoutMenu.DropDownItems.Add(_layerBox);
 
                     // Sets the size of the current cameras pixelrect
                     _layoutMenu.DropDownItems.Add(new ToolStripLabel("Size"));
-                    var widthBox = new ToolStripNumberControl();
-                    widthBox.Maximum = Screen.width;
-                    widthBox.Minimum = 0;
-                    widthBox.Value = Config.screenWidth;
-                    widthBox.ValueChanged += (sender, args) => {
-                        Config.screenWidth = (int)widthBox.Value;
+                    var _widthBox = new ToolStripNumberControl();
+                    _controlTracker.Add(_widthBox);
+                    _widthBox.Maximum = Screen.width;
+                    _widthBox.Minimum = 0;
+                    _widthBox.Value = Config.screenWidth;
+                    _widthBox.ValueChanged += (sender, args) =>
+                    {
+                        Config.screenWidth = (int)_widthBox.Value;
                         CreateScreenRenderTexture();
                     };
-                    _layoutMenu.DropDownItems.Add(widthBox);
-                    var heightBox = new ToolStripNumberControl();
-                    heightBox.Maximum = Screen.height;
-                    heightBox.Minimum = 0;
-                    heightBox.Value = Config.screenHeight;
-                    heightBox.ValueChanged += (sender, args) => {
-                        Config.screenHeight = (int)heightBox.Value;
+                    _layoutMenu.DropDownItems.Add(_widthBox);
+                    var _heightBox = new ToolStripNumberControl();
+                    _controlTracker.Add(_heightBox);
+                    _heightBox.Maximum = Screen.height;
+                    _heightBox.Minimum = 0;
+                    _heightBox.Value = Config.screenHeight;
+                    _heightBox.ValueChanged += (sender, args) =>
+                    {
+                        Config.screenHeight = (int)_heightBox.Value;
                         CreateScreenRenderTexture();
                     };
-                    _layoutMenu.DropDownItems.Add(heightBox);
+                    _layoutMenu.DropDownItems.Add(_heightBox);
 
                     // Set the location of the current cameras pixelrect
                     _layoutMenu.DropDownItems.Add(new ToolStripLabel("Position"));
-                    var xBox = new ToolStripNumberControl();
-                    xBox.Maximum = Screen.width;
-                    xBox.Minimum = 0;
-                    xBox.Value = Config.screenPosX;
-                    xBox.ValueChanged += (sender, args) => {
-                        Config.screenPosX = (int)xBox.Value;
+                    var _xBox = new ToolStripNumberControl();
+                    _controlTracker.Add(_xBox);
+                    _xBox.Maximum = Screen.width;
+                    _xBox.Minimum = 0;
+                    _xBox.Value = Config.screenPosX;
+                    _xBox.ValueChanged += (sender, args) =>
+                    {
+                        Config.screenPosX = (int)_xBox.Value;
                         CreateScreenRenderTexture();
                     };
-                    _layoutMenu.DropDownItems.Add(xBox);
-                    var yBox = new ToolStripNumberControl();
-                    yBox.Maximum = Screen.height;
-                    yBox.Minimum = 0;
-                    yBox.Value = Config.screenPosY;
-                    yBox.ValueChanged += (sender, args) => {
-                        Config.screenPosY = (int)yBox.Value;
+                    _layoutMenu.DropDownItems.Add(_xBox);
+                    var _yBox = new ToolStripNumberControl();
+                    _controlTracker.Add(_yBox);
+                    _yBox.Maximum = Screen.height;
+                    _yBox.Minimum = 0;
+                    _yBox.Value = Config.screenPosY;
+                    _yBox.ValueChanged += (sender, args) =>
+                    {
+                        Config.screenPosY = (int)_yBox.Value;
                         CreateScreenRenderTexture();
                     };
-                    _layoutMenu.DropDownItems.Add(yBox);
+                    _layoutMenu.DropDownItems.Add(_yBox);
                     _menuStrip.Items.Add(_layoutMenu);
-                        
+
                     // Extras submenu
-                    _extrasMenu = new ToolStripMenuItem("Extras");
+                    var _extrasMenu = new ToolStripMenuItem("Extras");
+                    _controlTracker.Add(_extrasMenu);
                     // Just the right number...
                     _extrasMenu.DropDownItems.Add("Spawn 38 Cameras", null, (p1, p2) =>
                     {

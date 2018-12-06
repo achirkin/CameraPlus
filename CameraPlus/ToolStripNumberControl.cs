@@ -21,16 +21,12 @@ namespace CameraPlus
         {
             base.OnSubscribeControlEvents(control);
             ((NumericUpDown)control).ValueChanged += new EventHandler(OnValueChanged);
-            ((NumericUpDown)control).MouseClick += ToolStripNumberControl_MouseClick;
-            ((NumericUpDown)control).Click += ToolStripNumberControl_Click;
         }
 
         protected override void OnUnsubscribeControlEvents(Control control)
         {
             base.OnUnsubscribeControlEvents(control);
             ((NumericUpDown)control).ValueChanged -= new EventHandler(OnValueChanged);
-            ((NumericUpDown)control).MouseClick -= ToolStripNumberControl_MouseClick;
-            ((NumericUpDown)control).Click -= ToolStripNumberControl_Click;
         }
 
         public decimal Maximum
@@ -81,16 +77,6 @@ namespace CameraPlus
             {
                 ValueChanged(this, e);
             }
-        }
-
-        private void ToolStripNumberControl_Click(object sender, EventArgs e)
-        {
-            Plugin.Log("Click!");
-        }
-
-        private void ToolStripNumberControl_MouseClick(object sender, MouseEventArgs e)
-        {
-            Plugin.Log("MouseClick!");
         }
     }
 }
