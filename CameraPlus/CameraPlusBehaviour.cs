@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SFB;
+using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
@@ -65,19 +66,20 @@ namespace CameraPlus
         protected int _prevLayer;
         protected float _aspectRatio;
 
-        protected bool mouseHeld = false;
-        protected bool isResizing = false;
-        protected bool isMoving = false;
-        protected bool contextMenuOpen = false;
+        protected bool _mouseHeld = false;
+        protected bool _isResizing = false;
+        protected bool _isMoving = false;
+        protected bool _contextMenuOpen = false;
         protected DateTime _lastRenderUpdate;
-        protected Vector2 initialOffset = new Vector2(0, 0);
-        protected Vector2 lastGrabPos = new Vector2(0, 0);
-        protected Vector2 initialTopRightPos = new Vector2(0, 0);
+        protected Vector2 _initialOffset = new Vector2(0, 0);
+        protected Vector2 _lastGrabPos = new Vector2(0, 0);
+        protected Vector2 _initialTopRightPos = new Vector2(0, 0);
+        protected ContextMenuStrip _menuStrip = new ContextMenuStrip();
 
         public virtual void Init(Config config)
         {
             DontDestroyOnLoad(gameObject);
-            Console.WriteLine("[Camera Plus] Created new camera plus behaviour component!");
+            Plugin.Log("Created new camera plus behaviour component!");
 
             Config = config;
 
@@ -87,9 +89,8 @@ namespace CameraPlus
         protected IEnumerator DelayedInit()
         {
             yield return _waitForMainCamera;
-
             _mainCamera = Camera.main;
-
+            _menuStrip = null;
             XRSettings.showDeviceView = false;
 
             Config.ConfigChangedEvent += PluginOnConfigChangedEvent;
@@ -181,8 +182,8 @@ namespace CameraPlus
             if (_camRenderTexture)
                 _camRenderTexture.Release();
 
-            if(contextMenuOpen)
-                menuStrip.Dispose();
+            if(_contextMenuOpen)
+                _menuStrip.Dispose();
         }
 
         protected virtual void PluginOnConfigChangedEvent(Config config)
@@ -240,7 +241,7 @@ namespace CameraPlus
 
                 if (!replace)
                 {
-                    Console.WriteLine("Don't need to replace");
+                    Plugin.Log("Don't need to replace");
                     return;
                 }
 
@@ -328,7 +329,7 @@ namespace CameraPlus
             foreach (CameraPlusInstance c in Plugin.Instance.Cameras.Values.ToArray())
             {
                 if (c.Instance == this) continue;
-                if (!IsWithinRenderArea(mousePos, c.Config) && !c.Instance.mouseHeld) continue;
+                if (!IsWithinRenderArea(mousePos, c.Config) && !c.Instance._mouseHeld) continue;
                 if (c.Config.layer > Config.layer)
                 {
                     return false;
@@ -339,7 +340,7 @@ namespace CameraPlus
                     return false;
                 }
 
-                if (c.Instance.mouseHeld && (c.Instance.isMoving || c.Instance.isResizing))
+                if (c.Instance._mouseHeld && (c.Instance._isMoving || c.Instance._isResizing))
                 {
                     return false;
                 }
@@ -349,15 +350,20 @@ namespace CameraPlus
 
         protected void CloseContextMenu()
         {
-            if (menuStrip != null)
+            if (_menuStrip != null)
             {
-                menuStrip.Dispose();
-                menuStrip = null;
+                _menuStrip.Dispose();
+                _menuStrip = null;
             }
-            contextMenuOpen = false;
+            _contextMenuOpen = false;
         }
 
-        ContextMenuStrip menuStrip = null;
+        protected void OnApplicationFocus(bool hasFocus)
+        {
+            if(!hasFocus)
+                CloseContextMenu();
+        }
+
         protected virtual void Update()
         {
             // Only toggle the main camera in/out of third person with f1, not any extra cams
@@ -385,46 +391,46 @@ namespace CameraPlus
             bool holdingLeftClick = Input.GetMouseButton(0);
             bool holdingRightClick = Input.GetMouseButton(1);
 
-            if (!mouseHeld && (holdingLeftClick || holdingRightClick))
+            if (!_mouseHeld && (holdingLeftClick || holdingRightClick))
             {
-                if (menuStrip != null && Input.mousePosition.x > 0 && Input.mousePosition.x < Screen.width && Input.mousePosition.y > 0 && Input.mousePosition.y < Screen.height)
+                if (_menuStrip != null && Input.mousePosition.x > 0 && Input.mousePosition.x < Screen.width && Input.mousePosition.y > 0 && Input.mousePosition.y < Screen.height)
                 {
                     CloseContextMenu();
                 }
             }
 
             Vector3 mousePos = Input.mousePosition;
-            if (!mouseHeld && !IsTopmostRenderAreaAtPos(mousePos)) return;
+            if (!_mouseHeld && !IsTopmostRenderAreaAtPos(mousePos)) return;
 
             if (holdingLeftClick)
             {
-                if (!mouseHeld)
+                if (!_mouseHeld)
                 {
-                    initialOffset.x = mousePos.x - Config.screenPosX;
-                    initialOffset.y = mousePos.y - Config.screenPosY;
-                    initialTopRightPos = Config.ScreenPosition + Config.ScreenSize;
-                    lastGrabPos = new Vector2(mousePos.x, mousePos.y);
+                    _initialOffset.x = mousePos.x - Config.screenPosX;
+                    _initialOffset.y = mousePos.y - Config.screenPosY;
+                    _initialTopRightPos = Config.ScreenPosition + Config.ScreenSize;
+                    _lastGrabPos = new Vector2(mousePos.x, mousePos.y);
                 }
-                mouseHeld = true;
+                _mouseHeld = true;
 
                 int tol = 15;
                 bool withinBottomLeft = (mousePos.x > Config.screenPosX - tol && mousePos.x < Config.screenPosX + tol && mousePos.y > Config.screenPosY - tol && mousePos.y < Config.screenPosY + tol);
-                if (isResizing || withinBottomLeft)
+                if (_isResizing || withinBottomLeft)
                 {
-                    isResizing = true;
-                    int changeX = (int)(lastGrabPos.x - mousePos.x);
-                    int changeY = (int)(mousePos.y - lastGrabPos.y);
+                    _isResizing = true;
+                    int changeX = (int)(_lastGrabPos.x - mousePos.x);
+                    int changeY = (int)(mousePos.y - _lastGrabPos.y);
                     Config.screenWidth += changeX;
                     Config.screenHeight = Mathf.Clamp(Mathf.RoundToInt(Config.screenWidth * _aspectRatio), 1, int.MaxValue);
-                    Config.screenPosX = (int)initialTopRightPos.x - Config.screenWidth;
-                    Config.screenPosY = (int)initialTopRightPos.y - Config.screenHeight;
-                    lastGrabPos = mousePos;
+                    Config.screenPosX = (int)_initialTopRightPos.x - Config.screenWidth;
+                    Config.screenPosY = (int)_initialTopRightPos.y - Config.screenHeight;
+                    _lastGrabPos = mousePos;
                 }
                 else
                 {
-                    isMoving = true;
-                    Config.screenPosX = (int)mousePos.x - (int)initialOffset.x;
-                    Config.screenPosY = (int)mousePos.y - (int)initialOffset.y;
+                    _isMoving = true;
+                    Config.screenPosX = (int)mousePos.x - (int)_initialOffset.x;
+                    Config.screenPosY = (int)mousePos.y - (int)_initialOffset.y;
                 }
                 Config.screenWidth = Mathf.Clamp(Config.screenWidth, 0, Screen.width);
                 Config.screenHeight = Mathf.Clamp(Config.screenHeight, 0, Screen.height);
@@ -436,12 +442,12 @@ namespace CameraPlus
             }
             else if (holdingRightClick)
             {
-                if (!mouseHeld)
+                if (!_mouseHeld)
                 {
-                    if (menuStrip == null)
+                    if (_menuStrip == null)
                     {
-                        menuStrip = new ContextMenuStrip();
-                        menuStrip.Items.Add("Add New Camera", null, (p1, p2) =>
+                        _menuStrip = new ContextMenuStrip();
+                        _menuStrip.Items.Add("Add New Camera", null, (p1, p2) =>
                         {
                             lock (Plugin.Instance.Cameras)
                             {
@@ -452,22 +458,22 @@ namespace CameraPlus
                                     restart:
                                     index++;
                                     cameraName = $"customcamera{index.ToString()}";
-                                    Console.WriteLine($"Checking {cameraName}");
-                                    if (!Plugin.Instance.CameraExists(cameraName))
+                                    Plugin.Log($"Checking {cameraName}");
+                                    if (!CameraUtilities.CameraExists(cameraName))
                                         break;
                                     else
                                         goto restart;
                                 }
-                                Console.WriteLine($"Adding {cameraName}");
-                                Plugin.Instance.AddNewCamera(cameraName);
-                                Plugin.Instance.ReloadCameras();
+                                Plugin.Log($"Adding {cameraName}");
+                                CameraUtilities.AddNewCamera(cameraName);
+                                CameraUtilities.ReloadCameras();
                                 CloseContextMenu();
                             }
                         });
-                        menuStrip.Items.Add(new ToolStripSeparator());
-                        menuStrip.Items.Add(Config.thirdPerson ? "First Person" : "Third Person", null, (p1, p2) =>
+                        _menuStrip.Items.Add(new ToolStripSeparator());
+                        _menuStrip.Items.Add(Config.thirdPerson ? "First Person" : "Third Person", null, (p1, p2) =>
                         {
-                            Console.WriteLine("Toggling third person!");
+                            Plugin.Log("Toggling third person!");
                             Config.thirdPerson = !Config.thirdPerson;
                             ThirdPerson = Config.thirdPerson;
                             CreateScreenRenderTexture();
@@ -475,9 +481,9 @@ namespace CameraPlus
                         });
                         if (Config.thirdPerson)
                         {
-                            menuStrip.Items.Add(Config.showThirdPersonCamera ? "Hide Third Person Camera" : "Show Third Person Camera", null, (p1, p2) =>
+                            _menuStrip.Items.Add(Config.showThirdPersonCamera ? "Hide Third Person Camera" : "Show Third Person Camera", null, (p1, p2) =>
                             {
-                                Console.WriteLine("Toggling third person camera!");
+                                Plugin.Log("Toggling third person camera!");
                                 Config.showThirdPersonCamera = !Config.showThirdPersonCamera;
                                 ThirdPerson = Config.thirdPerson;
                                 CreateScreenRenderTexture();
@@ -485,52 +491,55 @@ namespace CameraPlus
                             });
                         }
 
-                        menuStrip.Items.Add(new ToolStripSeparator());
-                        menuStrip.Items.Add("Up One Layer", null, (p1, p2) =>
+                        _menuStrip.Items.Add(new ToolStripSeparator());
+                        //var layerBox = new ToolStripComboBox("Layer");
+                        //_menuStrip.Items.Add(layerBox);
+                        _menuStrip.Items.Add("Up One Layer", null, (p1, p2) =>
                         {
-                            Console.WriteLine("Moving up one layer!");
+                            Plugin.Log("Moving up one layer!");
                             Config.layer++;
                             CreateScreenRenderTexture();
                             CloseContextMenu();
                         });
-                        menuStrip.Items.Add("Down One Layer", null, (p1, p2) =>
+                        _menuStrip.Items.Add("Down One Layer", null, (p1, p2) =>
                         {
-                            Console.WriteLine("Moving down one layer!");
+                            Plugin.Log("Moving down one layer!");
                             Config.layer--;
                             CreateScreenRenderTexture();
                             CloseContextMenu();
                         });
 
-                        menuStrip.Items.Add("Remove Camera", null, (p1, p2) =>
+                        _menuStrip.Items.Add("Remove Camera", null, (p1, p2) =>
                         {
-                            Console.WriteLine("Removing camera!");
+                            Plugin.Log("Removing camera!");
                             lock (Plugin.Instance.Cameras)
                             {
-                                if (Plugin.Instance.RemoveCamera(this))
+                                if (CameraUtilities.RemoveCamera(this))
                                 {
                                     CreateScreenRenderTexture();
                                     CloseContextMenu();
                                     GL.Clear(false, true, Color.black, 0);
                                     Destroy(this.gameObject);
                                 }
+                                else MessageBox.Show("Cannot remove main camera!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }
                         });
-                        contextMenuOpen = true;
+                        _contextMenuOpen = true;
                     }
-                    if (menuStrip != null)
+                    if (_menuStrip != null)
                     {
-                        menuStrip.SetBounds(Cursor.Position.X, Cursor.Position.Y, 0, 0);
-                        if (!menuStrip.Visible)
-                            menuStrip.Show();
+                        _menuStrip.SetBounds(Cursor.Position.X, Cursor.Position.Y, 0, 0);
+                        if (!_menuStrip.Visible)
+                            _menuStrip.Show();
                     }
                 }
-                mouseHeld = true;
+                _mouseHeld = true;
             }
             else
             {
-                isResizing = false;
-                isMoving = false;
-                mouseHeld = false;
+                _isResizing = false;
+                _isMoving = false;
+                _mouseHeld = false;
             }
         }
     }
