@@ -71,6 +71,7 @@ namespace CameraPlus
         protected bool _isResizing = false;
         protected bool _isMoving = false;
         protected bool _contextMenuOpen = false;
+        protected bool _isCameraDestroyed = false;
         protected DateTime _lastRenderUpdate;
         protected Vector2 _initialOffset = new Vector2(0, 0);
         protected Vector2 _lastGrabPos = new Vector2(0, 0);
@@ -101,6 +102,8 @@ namespace CameraPlus
             Config.ConfigChangedEvent += PluginOnConfigChangedEvent;
 
             var gameObj = Instantiate(_mainCamera.gameObject);
+            //var cinematicCamera = gameObj.AddComponent<CinematicCamera>();
+            //cinematicCamera.Init(this);
             gameObj.SetActive(false);
             gameObj.name = "Camera Plus";
             gameObj.tag = "Untagged";
@@ -108,6 +111,7 @@ namespace CameraPlus
             DestroyImmediate(gameObj.GetComponent("CameraRenderCallbacksManager"));
             DestroyImmediate(gameObj.GetComponent("AudioListener"));
             DestroyImmediate(gameObj.GetComponent("MeshCollider"));
+
 
             if (SteamVRCompatibility.IsAvailable)
             {
@@ -349,47 +353,6 @@ namespace CameraPlus
             }
             return true;
         }
-
-        protected void CloseContextMenu()
-        {
-            if (_menuStrip != null)
-            {
-                _menuStrip.Close();
-                _menuStrip.Items.Clear();
-                foreach (ToolStripItem item in _controlTracker)
-                {
-                    if (item is ToolStripMenuItem)
-                        (item as ToolStripMenuItem).DropDownItems.Clear();
-                    item.Dispose();
-                }
-                _menuStrip.Dispose();
-                _menuStrip = null;
-            }
-            _contextMenuOpen = false;
-        }
-
-        protected IEnumerator Spawn38Cameras()
-        {
-            lock (Plugin.Instance.Cameras)
-            {
-                for (int i = 0; i < 38; i++)
-                {
-                    int index = 0;
-                    string cameraName = String.Empty;
-                    while (true)
-                    {
-                        index++;
-                        cameraName = $"customcamera{index.ToString()}";
-                        if (!CameraUtilities.CameraExists(cameraName))
-                            break;
-                    }
-                    CameraUtilities.AddNewCamera(cameraName, null, true);
-                    CameraUtilities.ReloadCameras();
-
-                    yield return null;
-                }
-            }
-        }
         
         protected virtual void Update()
         {
@@ -422,7 +385,29 @@ namespace CameraPlus
                     Config.Save();
                 }
             }
+            HandleContextMenu();
+        }
 
+        protected void CloseContextMenu()
+        {
+            if (_menuStrip != null)
+            {
+                _menuStrip.Close();
+                _menuStrip.Items.Clear();
+                foreach (ToolStripItem item in _controlTracker)
+                {
+                    if (item is ToolStripMenuItem)
+                        (item as ToolStripMenuItem).DropDownItems.Clear();
+                    item.Dispose();
+                }
+                _menuStrip.Dispose();
+                _menuStrip = null;
+            }
+            _contextMenuOpen = false;
+        }
+
+        protected void HandleContextMenu()
+        {
             bool holdingLeftClick = Input.GetMouseButton(0);
             bool holdingRightClick = Input.GetMouseButton(1);
 
@@ -487,15 +472,7 @@ namespace CameraPlus
                     {
                         lock (Plugin.Instance.Cameras)
                         {
-                            int index = 0;
-                            string cameraName = String.Empty;
-                            while (true)
-                            {
-                                index++;
-                                cameraName = $"customcamera{index.ToString()}";
-                                if (!CameraUtilities.CameraExists(cameraName))
-                                    break;
-                            }
+                            string cameraName = CameraUtilities.GetNextCameraName();
                             Plugin.Log($"Adding new config with name {cameraName}.cfg");
                             CameraUtilities.AddNewCamera(cameraName);
                             CameraUtilities.ReloadCameras();
@@ -508,19 +485,7 @@ namespace CameraPlus
                     {
                         lock (Plugin.Instance.Cameras)
                         {
-                            int index = 0;
-                            string cameraName = String.Empty;
-                            while (true)
-                            {
-                                restart:
-                                index++;
-                                cameraName = $"customcamera{index.ToString()}";
-                                Plugin.Log($"Checking {cameraName}");
-                                if (!CameraUtilities.CameraExists(cameraName))
-                                    break;
-                                else
-                                    goto restart;
-                            }
+                            string cameraName = CameraUtilities.GetNextCameraName();
                             Plugin.Log($"Adding {cameraName}");
                             CameraUtilities.AddNewCamera(cameraName, Config);
                             CameraUtilities.ReloadCameras();
@@ -535,10 +500,12 @@ namespace CameraPlus
                         {
                             if (CameraUtilities.RemoveCamera(this))
                             {
+                                _isCameraDestroyed = true;
                                 CreateScreenRenderTexture();
                                 CloseContextMenu();
                                 GL.Clear(false, true, Color.black, 0);
                                 Destroy(this.gameObject);
+                                Plugin.Log("Camera removed!");
                             }
                             else MessageBox.Show("Cannot remove main camera!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
@@ -633,17 +600,44 @@ namespace CameraPlus
                     _layoutMenu.DropDownItems.Add(_yBox);
                     _menuStrip.Items.Add(_layoutMenu);
 
+                    // FOV
+                    _layoutMenu.DropDownItems.Add(new ToolStripLabel("FOV"));
+                    var _fov = new ToolStripNumberControl();
+                    _controlTracker.Add(_fov);
+                    _fov.Maximum = Screen.width;
+                    _fov.Minimum = 0;
+                    _fov.Value = (decimal)Config.fov;
+
+                    _fov.ValueChanged += (sender, args) =>
+                    {
+                        Config.fov = (int)_fov.Value;
+                        SetFOV();
+                        CreateScreenRenderTexture();
+                    };
+                    _layoutMenu.DropDownItems.Add(_fov);
+
+                    //// Scripts submenu
+                    //var _scriptsMenu = new ToolStripMenuItem("Scripts");
+                    //_controlTracker.Add(_scriptsMenu);
+                    //// Just the right number...
+                    //_scriptsMenu.DropDownItems.Add("Spawn 38 Cameras", null, (p1, p2) =>
+                    //{
+                    //    StartCoroutine(CameraUtilities.Spawn38Cameras());
+                    //    CloseContextMenu();
+                    //});
+                    //_menuStrip.Items.Add(_scriptsMenu);
+
                     // Extras submenu
                     var _extrasMenu = new ToolStripMenuItem("Extras");
                     _controlTracker.Add(_extrasMenu);
                     // Just the right number...
                     _extrasMenu.DropDownItems.Add("Spawn 38 Cameras", null, (p1, p2) =>
                     {
-                        StartCoroutine(Spawn38Cameras());
+                        StartCoroutine(CameraUtilities.Spawn38Cameras());
                         CloseContextMenu();
                     });
                     _menuStrip.Items.Add(_extrasMenu);
-                        
+
                     _contextMenuOpen = true;
                 }
                 if (_menuStrip != null)
@@ -654,9 +648,16 @@ namespace CameraPlus
                 }
                 _mouseHeld = true;
             }
-            else if(_isResizing || _isMoving || _mouseHeld)
+            else if (_isResizing || _isMoving || _mouseHeld)
             {
-                Config.Save();
+                if (!_contextMenuOpen)
+                {
+                    if (!_isCameraDestroyed)
+                    {
+                        Config.Save();
+                    }
+                }
+
                 _isResizing = false;
                 _isMoving = false;
                 _mouseHeld = false;

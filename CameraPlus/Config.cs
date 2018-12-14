@@ -79,13 +79,10 @@ namespace CameraPlus
 				var text = File.ReadAllText(FilePath);
 				if (text.Contains("rotx"))
 				{
-
 					var oldRotConfig = new OldRotConfig();
 					ConfigSerializer.LoadConfig(oldRotConfig, FilePath);
 
-					var euler = new Quaternion(oldRotConfig.rotx, oldRotConfig.roty, oldRotConfig.rotz,
-							oldRotConfig.rotw)
-						.eulerAngles;
+					var euler = new Quaternion(oldRotConfig.rotx, oldRotConfig.roty, oldRotConfig.rotz, oldRotConfig.rotw).eulerAngles;
 					angx = euler.x;
 					angy = euler.y;
 					angz = euler.z;
@@ -116,7 +113,7 @@ namespace CameraPlus
 		{
 			_saving = true;
 			ConfigSerializer.SaveConfig(this, FilePath);
-		}
+        }
 
 		public void Load()
 		{

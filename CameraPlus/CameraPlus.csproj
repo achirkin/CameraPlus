@@ -84,6 +84,8 @@
     <Compile Include="CameraPlusBehaviour.cs" />
     <Compile Include="ReflectionUtil.cs" />
     <Compile Include="ScreenCameraBehaviour.cs" />
+    <Compile Include="SimpleJSON.cs" />
+    <Compile Include="CinematicCamera.cs" />
     <Compile Include="SteamVRCompatibility.cs" />
     <Compile Include="ToolStripNumberControl.cs">
       <SubType>Component</SubType>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace CameraPlus
         
         public static void AddNewCamera(string cameraName, Config CopyConfig = null, bool meme = false)
         {
-            string path = Environment.CurrentDirectory + "\\UserData\\CameraPlus\\" + cameraName + ".cfg";
+            string path = Path.Combine(Environment.CurrentDirectory, "UserData\\CameraPlus\\" + cameraName + ".cfg");
             if (!File.Exists(path))
             {
                 Config config = null;
@@ -52,18 +53,34 @@ namespace CameraPlus
             }
         }
 
+        public static string GetNextCameraName()
+        {
+            int index = 1;
+            string cameraName = String.Empty;
+            while (true)
+            {
+                cameraName = $"customcamera{index.ToString()}";
+                if (!CameraUtilities.CameraExists(cameraName))
+                    break;
+
+                index++;
+            }
+            return cameraName;
+        }
+
         public static bool RemoveCamera(CameraPlusBehaviour instance)
         {
             try
             {
-                Plugin.Instance.Cameras.TryRemove(Plugin.Instance.Cameras.Where(c => c.Value.Instance == instance && c.Key != "cameraplus.cfg")?.First().Key, out var removedEntry);
-                if (removedEntry != null)
+                if (Plugin.Instance.Cameras.TryRemove(Plugin.Instance.Cameras.Where(c => c.Value.Instance == instance && c.Key != "cameraplus.cfg")?.First().Key, out var removedEntry))
                 {
-                    File.Delete(removedEntry.Config.FilePath);
+                    if (File.Exists(removedEntry.Config.FilePath))
+                        File.Delete(removedEntry.Config.FilePath);
+
                     return true;
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 Plugin.Log("Can't remove cam!");
             }
@@ -74,7 +91,7 @@ namespace CameraPlus
         {
             try
             {
-                string[] files = Directory.GetFiles(Environment.CurrentDirectory + "\\UserData\\CameraPlus");
+                string[] files = Directory.GetFiles(Path.Combine(Environment.CurrentDirectory, "UserData\\CameraPlus"));
                 foreach (string filePath in files)
                 {
                     string fileName = Path.GetFileName(filePath);
@@ -88,6 +105,20 @@ namespace CameraPlus
             catch (Exception e)
             {
                 Plugin.Log($"Exception while reloading cameras! {e.ToString()}");
+            }
+        }
+        
+        public static IEnumerator Spawn38Cameras()
+        {
+            lock (Plugin.Instance.Cameras)
+            {
+                for (int i = 0; i < 38; i++)
+                {
+                    AddNewCamera(GetNextCameraName(), null, true);
+                    ReloadCameras();
+
+                    yield return null;
+                }
             }
         }
     }
