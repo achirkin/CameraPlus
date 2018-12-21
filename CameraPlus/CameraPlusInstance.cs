@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ namespace CameraPlus
         {
             Config = new Config(configPath);
 
-            var gameObj = new GameObject("CameraPlus");
+            var gameObj = new GameObject($"CamPlus_{Path.GetFileName(configPath)}");
             Instance = gameObj.AddComponent<CameraPlusBehaviour>();
             Instance.Init(Config);
         }

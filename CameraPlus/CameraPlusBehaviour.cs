@@ -129,6 +129,7 @@ namespace CameraPlus
             _cam = gameObj.GetComponent<Camera>();
             _cam.stereoTargetEye = StereoTargetEyeMask.None;
             _cam.enabled = true;
+            _cam.name = Path.GetFileName(Config.FilePath);
 
             gameObj.SetActive(true);
 
@@ -173,6 +174,7 @@ namespace CameraPlus
             }
 
             SceneManager_activeSceneChanged(new Scene(), new Scene());
+            Plugin.Log($"Camera \"{Path.GetFileName(Config.FilePath)} successfully initialized!\"");
         }
         
         protected virtual void OnDestroy()

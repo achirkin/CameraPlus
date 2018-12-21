@@ -36,8 +36,8 @@ namespace CameraPlus
                 }
                 if (meme)
                 {
-                    config.screenWidth = (int)Random.Range(200, Screen.width/1.5f);
-                    config.screenHeight = (int)Random.Range(200, Screen.height/1.5f);
+                    config.screenWidth = (int)Random.Range(200, Screen.width / 1.5f);
+                    config.screenHeight = (int)Random.Range(200, Screen.height / 1.5f);
                     config.screenPosX = Random.Range(-200, Screen.width - config.screenWidth + 200);
                     config.screenPosY = Random.Range(-200, Screen.height - config.screenHeight + 200);
                     config.thirdPerson = Random.Range(0, 2) == 0;
@@ -50,6 +50,11 @@ namespace CameraPlus
                     config.angz = Random.Range(0, 360);
                 }
                 config.Save();
+                Plugin.Log($"Success creating new camera \"{cameraName}\"");
+            }
+            else
+            {
+                Plugin.Log($"Camera \"{cameraName}\" already exists!");
             }
         }
 
@@ -68,14 +73,17 @@ namespace CameraPlus
             return cameraName;
         }
 
-        public static bool RemoveCamera(CameraPlusBehaviour instance)
+        public static bool RemoveCamera(CameraPlusBehaviour instance, bool delete = true)
         {
             try
             {
                 if (Plugin.Instance.Cameras.TryRemove(Plugin.Instance.Cameras.Where(c => c.Value.Instance == instance && c.Key != "cameraplus.cfg")?.First().Key, out var removedEntry))
                 {
-                    if (File.Exists(removedEntry.Config.FilePath))
-                        File.Delete(removedEntry.Config.FilePath);
+                    if (delete)
+                    {
+                        if (File.Exists(removedEntry.Config.FilePath))
+                            File.Delete(removedEntry.Config.FilePath);
+                    }
 
                     return true;
                 }
