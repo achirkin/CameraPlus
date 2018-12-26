@@ -279,7 +279,7 @@ namespace CameraPlus
         public virtual void SceneManager_activeSceneChanged(Scene from, Scene to)
         {
             StartCoroutine(GetMainCamera());
-            var pointer = Resources.FindObjectsOfTypeAll<VRPointer>().FirstOrDefault();
+            var pointer = to.name == "GameCore" ? Resources.FindObjectsOfTypeAll<VRPointer>().Last() : Resources.FindObjectsOfTypeAll<VRPointer>().First();
             if (pointer == null) return;
             if (_moverPointer) Destroy(_moverPointer);
             _moverPointer = pointer.gameObject.AddComponent<CameraMoverPointer>();
