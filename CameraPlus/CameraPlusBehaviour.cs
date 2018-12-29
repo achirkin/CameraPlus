@@ -58,6 +58,7 @@ namespace CameraPlus
         protected CameraMoverPointer _moverPointer = null;
         protected GameObject _cameraCubeGO;
         protected GameObject _quad;
+        protected CameraMovement _cameraMovement = null;
 
         protected int _prevScreenWidth;
         protected int _prevScreenHeight;
@@ -102,8 +103,11 @@ namespace CameraPlus
             Config.ConfigChangedEvent += PluginOnConfigChangedEvent;
 
             var gameObj = Instantiate(_mainCamera.gameObject);
-            //var cinematicCamera = gameObj.AddComponent<CinematicCamera>();
-            //cinematicCamera.Init(this);
+
+            _cameraMovement = gameObj.AddComponent<CameraMovement>();
+            if (Config.movementScriptPath != String.Empty)
+                _cameraMovement.Init(this);
+
             gameObj.SetActive(false);
             gameObj.name = "Camera Plus";
             gameObj.tag = "Untagged";
@@ -521,6 +525,7 @@ namespace CameraPlus
                         ThirdPerson = Config.thirdPerson;
                         CreateScreenRenderTexture();
                         CloseContextMenu();
+                        Config.Save();
                     });
                     if (Config.thirdPerson)
                     {
@@ -531,6 +536,7 @@ namespace CameraPlus
                             ThirdPerson = Config.thirdPerson;
                             CreateScreenRenderTexture();
                             CloseContextMenu();
+                            Config.Save();
                         });
                     }
                     _menuStrip.Items.Add(new ToolStripSeparator());
@@ -548,6 +554,7 @@ namespace CameraPlus
                     {
                         Config.layer = (int)_layerBox.Value;
                         CreateScreenRenderTexture();
+                        Config.Save();
                     };
                     _layoutMenu.DropDownItems.Add(_layerBox);
 
@@ -562,6 +569,7 @@ namespace CameraPlus
                     {
                         Config.screenWidth = (int)_widthBox.Value;
                         CreateScreenRenderTexture();
+                        Config.Save();
                     };
                     _layoutMenu.DropDownItems.Add(_widthBox);
                     var _heightBox = new ToolStripNumberControl();
@@ -573,6 +581,7 @@ namespace CameraPlus
                     {
                         Config.screenHeight = (int)_heightBox.Value;
                         CreateScreenRenderTexture();
+                        Config.Save();
                     };
                     _layoutMenu.DropDownItems.Add(_heightBox);
 
@@ -587,6 +596,7 @@ namespace CameraPlus
                     {
                         Config.screenPosX = (int)_xBox.Value;
                         CreateScreenRenderTexture();
+                        Config.Save();
                     };
                     _layoutMenu.DropDownItems.Add(_xBox);
                     var _yBox = new ToolStripNumberControl();
@@ -598,6 +608,7 @@ namespace CameraPlus
                     {
                         Config.screenPosY = (int)_yBox.Value;
                         CreateScreenRenderTexture();
+                        Config.Save();
                     };
                     _layoutMenu.DropDownItems.Add(_yBox);
                     _menuStrip.Items.Add(_layoutMenu);
@@ -615,20 +626,58 @@ namespace CameraPlus
                         Config.fov = (int)_fov.Value;
                         SetFOV();
                         CreateScreenRenderTexture();
+                        Config.Save();
                     };
                     _layoutMenu.DropDownItems.Add(_fov);
 
-                    //// Scripts submenu
-                    //var _scriptsMenu = new ToolStripMenuItem("Scripts");
-                    //_controlTracker.Add(_scriptsMenu);
-                    //// Just the right number...
-                    //_scriptsMenu.DropDownItems.Add("Spawn 38 Cameras", null, (p1, p2) =>
-                    //{
-                    //    StartCoroutine(CameraUtilities.Spawn38Cameras());
-                    //    CloseContextMenu();
-                    //});
-                    //_menuStrip.Items.Add(_scriptsMenu);
+                    // Scripts submenu
+                    var _scriptsMenu = new ToolStripMenuItem("Scripts");
+                    _controlTracker.Add(_scriptsMenu);
 
+                    // Add menu
+                    var _addMenu = new ToolStripMenuItem("Add");
+                    _controlTracker.Add(_addMenu);
+                    ToolStripItem _addCameraMovement = _addMenu.DropDownItems.Add("Camera Movement", null, (p1, p2) =>
+                    {
+                        OpenFileDialog ofd = new OpenFileDialog();
+                        ofd.InitialDirectory = Path.Combine(Environment.CurrentDirectory, "UserData\\CameraPlus");
+                        ofd.Title = "Select a script";
+                        ofd.FileOk += (sender, e) => { string file = ((OpenFileDialog)sender).FileName;
+                            if (File.Exists(file))
+                            {
+                                Config.movementScriptPath = file;
+                                if (Config.movementScriptPath != String.Empty)
+                                {
+                                    if (_cameraMovement.Init(this))
+                                    {
+                                        Config.thirdPerson = true;
+                                        ThirdPerson = true;
+                                        CreateScreenRenderTexture();
+                                    }
+                                }
+                                Config.Save();
+                            }
+                        };
+                        ofd.ShowDialog();
+                        CloseContextMenu();
+                    });
+                    _addCameraMovement.Enabled = Config.movementScriptPath == String.Empty;
+                    _scriptsMenu.DropDownItems.Add(_addMenu);
+
+                    // Remove menu
+                    var _removeMenu = new ToolStripMenuItem("Remove");
+                    _controlTracker.Add(_removeMenu);
+                    ToolStripItem _removeCameraMovement = _removeMenu.DropDownItems.Add("Camera Movement", null, (p1, p2) =>
+                    {
+                        Config.movementScriptPath = String.Empty;
+                        _cameraMovement.Shutdown();
+                        Config.Save();
+                        CloseContextMenu();
+                    });
+                    _removeCameraMovement.Enabled = Config.movementScriptPath != String.Empty;
+                    _scriptsMenu.DropDownItems.Add(_removeMenu);
+                    _menuStrip.Items.Add(_scriptsMenu);
+                    
                     // Extras submenu
                     var _extrasMenu = new ToolStripMenuItem("Extras");
                     _controlTracker.Add(_extrasMenu);

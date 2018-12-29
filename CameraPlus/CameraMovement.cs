@@ -7,11 +7,10 @@ using SimpleJSON;
 
 namespace CameraPlus
 {
-    public class CinematicCamera : MonoBehaviour
+    public class CameraMovement : MonoBehaviour
     {
         private CameraPlusBehaviour _cameraPlus;
         private bool dataLoaded = false;
-        public string filepath;
         public CameraData data = new CameraData();
         private Vector3 StartPos = Vector3.zero;
         private Vector3 EndPos = Vector3.zero;
@@ -35,13 +34,14 @@ namespace CameraPlus
         {
             public List<Movements> Movements = new List<Movements>();
 
-            public void LoadFromJson(string jsonString)
+            public bool LoadFromJson(string jsonString)
             {
                 Movements.Clear();
                 JSONNode node = JSON.Parse(jsonString);
 
-                if (!node["Movements"].IsNull)
+                if (node != null && !node["Movements"].IsNull)
                 {
+                    Plugin.Log("valid json!");
                     foreach (JSONObject movement in node["Movements"].AsArray)
                     {
                         Movements newMovement = new Movements();
@@ -60,7 +60,9 @@ namespace CameraPlus
                         Movements.Add(newMovement);
                         Plugin.Log("Parsed movement!");
                     }
+                    return true;
                 }
+                return false;
             }
         }
 
@@ -80,43 +82,50 @@ namespace CameraPlus
             }
         }
 
-        public void Init(CameraPlusBehaviour cameraPlus)
+        public bool Init(CameraPlusBehaviour cameraPlus)
         {
             _cameraPlus = cameraPlus;
-            InitLoadCameraData(Path.Combine(Environment.CurrentDirectory, "UserData\\CameraMovementData.json"));
+            return InitLoadCameraData(cameraPlus.Config.movementScriptPath);
         }
 
-        private void InitLoadCameraData(string path)
+        public void Shutdown()
+        {
+            eventID = 0;
+            dataLoaded = false;
+            movePerc = 0;
+        }
+
+        private bool InitLoadCameraData(string path)
         {
             //Making sure File Exists Hopefully in UserData Somewhere
             if (File.Exists(path))
             {
                 Console.WriteLine("[CameraPlus] CameraMovementData found at: " + path);
-                LoadCameraData(path);
+                return LoadCameraData(path);
             }
-            else
-            {
-                Console.WriteLine("[CameraPlus] No CameraMovementData found at: " + path + " Destroying Script!");
-                Destroy(this, 0);
-            }
+            return false;
         }
 
-        private void LoadCameraData(string path)
+        private bool LoadCameraData(string path)
         {
             string jsonText = File.ReadAllText(path);
-            data.LoadFromJson(jsonText);
-            Console.WriteLine("[CameraPlus] Populated CameraData");
-
-            if (data.Movements.Count == 0)
+            if (data.LoadFromJson(jsonText))
             {
-                Console.WriteLine("[CameraPlus] No movement data!");
-                Destroy(this, 0);
-            }
-            eventID = 0;
-            UpdatePosAndRot();
-            dataLoaded = true;
+                Console.WriteLine("[CameraPlus] Populated CameraData");
 
-            Console.WriteLine("[CameraPlus] Found " + data.Movements.Count + " entries in: " + path);
+                if (data.Movements.Count == 0)
+                {
+                    Console.WriteLine("[CameraPlus] No movement data!");
+                    return false;
+                }
+                eventID = 0;
+                UpdatePosAndRot();
+                dataLoaded = true;
+
+                Console.WriteLine("[CameraPlus] Found " + data.Movements.Count + " entries in: " + path);
+                return true;
+            }
+            return false;
         }
 
         private void UpdatePosAndRot()

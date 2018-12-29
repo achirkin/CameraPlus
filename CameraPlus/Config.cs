@@ -30,6 +30,8 @@ namespace CameraPlus
         public int screenPosY;
 
         public int layer = -1000;
+
+        public string movementScriptPath = String.Empty;
         //public int maxFps = 90;
 
         public event Action<Config> ConfigChangedEvent;
