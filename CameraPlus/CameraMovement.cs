@@ -41,7 +41,6 @@ namespace CameraPlus
 
                 if (node != null && !node["Movements"].IsNull)
                 {
-                    Plugin.Log("valid json!");
                     foreach (JSONObject movement in node["Movements"].AsArray)
                     {
                         Movements newMovement = new Movements();
@@ -58,7 +57,6 @@ namespace CameraPlus
                         newMovement.Delay = movement["Delay"].AsFloat;
                         newMovement.Duration = Mathf.Clamp(movement["Duration"].AsFloat, 0.01f, float.MaxValue); // Make sure duration is at least 0.01 seconds, to avoid a divide by zero error
                         Movements.Add(newMovement);
-                        Plugin.Log("Parsed movement!");
                     }
                     return true;
                 }

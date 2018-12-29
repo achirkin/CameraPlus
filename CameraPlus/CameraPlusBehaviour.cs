@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using UnityEngine;
@@ -412,6 +413,14 @@ namespace CameraPlus
             _contextMenuOpen = false;
         }
 
+        public static byte[] GetResource(Assembly asm, string ResourceName)
+        {
+            System.IO.Stream stream = asm.GetManifestResourceStream(ResourceName);
+            byte[] data = new byte[stream.Length];
+            stream.Read(data, 0, (int)stream.Length);
+            return data;
+        }
+
         protected void HandleContextMenu()
         {
             bool holdingLeftClick = Input.GetMouseButton(0);
@@ -640,7 +649,15 @@ namespace CameraPlus
                     ToolStripItem _addCameraMovement = _addMenu.DropDownItems.Add("Camera Movement", null, (p1, p2) =>
                     {
                         OpenFileDialog ofd = new OpenFileDialog();
-                        ofd.InitialDirectory = Path.Combine(Environment.CurrentDirectory, "UserData\\CameraPlus");
+                        string path = Path.Combine(Environment.CurrentDirectory, "UserData\\CameraPlus\\Scripts");
+                        if (!Directory.Exists(path))
+                            Directory.CreateDirectory(path);
+                        
+                        string defaultScript = Path.Combine(path, "CameraMovementData.json");
+                        if (!File.Exists(defaultScript))
+                            File.WriteAllBytes(defaultScript, GetResource(Assembly.GetExecutingAssembly(), "CameraPlus.Resources.CameraMovementData.json"));
+                        
+                        ofd.InitialDirectory = path;
                         ofd.Title = "Select a script";
                         ofd.FileOk += (sender, e) => { string file = ((OpenFileDialog)sender).FileName;
                             if (File.Exists(file))
