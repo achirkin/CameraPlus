@@ -38,11 +38,15 @@ namespace CameraPlus
             // If any new cameras have been added to the config folder, render them
             CameraUtilities.ReloadCameras();
 
-            // Trigger our activeSceneChanged event for each camera, because subscribing to the events from within the CameraPlusBehaviour component yields inconsistent results.
-            foreach (CameraPlusInstance c in Cameras.Values)
+            try
             {
-                c.Instance.SceneManager_activeSceneChanged(from, to);
+                // Trigger our activeSceneChanged event for each camera, because subscribing to the events from within the CameraPlusBehaviour component yields inconsistent results.
+                foreach (CameraPlusInstance c in Cameras.Values)
+                {
+                    c.Instance.SceneManager_activeSceneChanged(from, to);
+                }
             }
+            catch (Exception) { }
         }
 
         public void OnApplicationQuit()
