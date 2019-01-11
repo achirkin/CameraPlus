@@ -299,22 +299,30 @@ namespace CameraPlus
 
         protected virtual void LateUpdate()
         {
-            var camera = _mainCamera.transform;
-
-            if (ThirdPerson)
+            try
             {
-                transform.position = ThirdPersonPos;
-                transform.eulerAngles = ThirdPersonRot;
-                _cameraCube.position = ThirdPersonPos;
-                _cameraCube.eulerAngles = ThirdPersonRot;
-                return;
+                var camera = _mainCamera.transform;
+
+                if (ThirdPerson)
+                {
+                    transform.position = ThirdPersonPos;
+                    transform.eulerAngles = ThirdPersonRot;
+                    _cameraCube.position = ThirdPersonPos;
+                    _cameraCube.eulerAngles = ThirdPersonRot;
+                    return;
+                }
+
+                transform.position = Vector3.Lerp(transform.position, camera.position,
+                    Config.positionSmooth * Time.unscaledDeltaTime);
+
+                transform.rotation = Quaternion.Slerp(transform.rotation, camera.rotation,
+                    Config.rotationSmooth * Time.unscaledDeltaTime);
+            }
+            catch
+            {
+
             }
 
-            transform.position = Vector3.Lerp(transform.position, camera.position,
-                Config.positionSmooth * Time.unscaledDeltaTime);
-
-            transform.rotation = Quaternion.Slerp(transform.rotation, camera.rotation,
-                Config.rotationSmooth * Time.unscaledDeltaTime);
         }
 
         protected virtual void SetFOV()

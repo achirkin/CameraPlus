@@ -28,7 +28,14 @@ namespace CameraPlus
 
         protected virtual void OnEnable()
         {
+            try
+            {
             _cameraPlus.Config.ConfigChangedEvent += PluginOnConfigChangedEvent;
+            }
+            catch
+            {
+
+            }
         }
 
         protected virtual void OnDisable()
