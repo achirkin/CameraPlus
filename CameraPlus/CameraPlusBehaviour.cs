@@ -318,11 +318,7 @@ namespace CameraPlus
                 transform.rotation = Quaternion.Slerp(transform.rotation, camera.rotation,
                     Config.rotationSmooth * Time.unscaledDeltaTime);
             }
-            catch
-            {
-
-            }
-
+            catch { }
         }
 
         protected virtual void SetFOV()
@@ -554,6 +550,17 @@ namespace CameraPlus
                             CreateScreenRenderTexture();
                             CloseContextMenu();
                             Config.Save();
+                        });
+
+                        // Hides/unhides the third person camera that appears when a camera is in third person mode
+                        _menuStrip.Items.Add("Reset Camera Position/Rotation", null, (p1, p2) =>
+                        {
+                            Config.Position = Config.DefaultPosition;
+                            Config.Rotation = Config.DefaultRotation;
+                            ThirdPersonPos = Config.DefaultPosition;
+                            ThirdPersonRot = Config.DefaultRotation;
+                            Config.Save();
+                            CloseContextMenu();
                         });
                     }
                     _menuStrip.Items.Add(new ToolStripSeparator());

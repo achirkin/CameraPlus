@@ -61,12 +61,43 @@ namespace CameraPlus
 			{
 				return new Vector3(posx, posy, posz);
 			}
+            set
+            {
+                posx = value.x;
+                posy = value.y;
+                posz = value.z;
+            }
 		}
+
+        public Vector3 DefaultPosition
+        {
+            get
+            {
+                return new Vector3(0f, 2f, -1.2f);
+            }
+        }
 
 		public Vector3 Rotation
 		{
-			get { return new Vector3(angx, angy, angz); }
+			get
+            {
+                return new Vector3(angx, angy, angz);
+            }
+            set
+            {
+                angx = value.x;
+                angy = value.y;
+                angz = value.z;
+            }
 		}
+
+        public Vector3 DefaultRotation
+        {
+            get
+            {
+                return new Vector3(15f, 0f, 0f);
+            }
+        }
 
 		public Config(string filePath)
 		{

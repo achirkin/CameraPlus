@@ -30,12 +30,9 @@ namespace CameraPlus
         {
             try
             {
-            _cameraPlus.Config.ConfigChangedEvent += PluginOnConfigChangedEvent;
+                _cameraPlus.Config.ConfigChangedEvent += PluginOnConfigChangedEvent;
             }
-            catch
-            {
-
-            }
+            catch { }
         }
 
         protected virtual void OnDisable()
@@ -86,6 +83,7 @@ namespace CameraPlus
                 _realPos = _grabbingController.transform.TransformPoint(_grabPos);
                 _realRot = _grabbingController.transform.rotation * _grabRot;
             }
+            else return;
 
             _cameraPlus.ThirdPersonPos = Vector3.Lerp(_cameraCube.position, _realPos,
                 _cameraPlus.Config.positionSmooth * Time.unscaledDeltaTime);
