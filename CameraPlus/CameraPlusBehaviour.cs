@@ -347,7 +347,7 @@ namespace CameraPlus
             var fov = (float)(57.2957801818848 *
                                (2.0 * Mathf.Atan(
                                     Mathf.Tan((float)(Config.fov * (Math.PI / 180.0) * 0.5)) /
-                                    _mainCamera.aspect)));
+                                    (Config.screenWidth/Config.screenHeight))));
             _cam.fieldOfView = fov;
         }
 
