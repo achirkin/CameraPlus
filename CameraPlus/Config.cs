@@ -23,7 +23,7 @@ namespace CameraPlus
         public float angx = 15;
         public float angy;
         public float angz;
-        
+
         public int screenWidth = Screen.width;
         public int screenHeight = Screen.height;
         public int screenPosX;
