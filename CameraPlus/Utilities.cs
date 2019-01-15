@@ -46,7 +46,7 @@ namespace CameraPlus
             return data;
         }
 
-        public static bool TestRange(int numberToCheck, int bottom, int top)
+        public static bool WithinRange(int numberToCheck, int bottom, int top)
         {
             return (numberToCheck >= bottom && numberToCheck <= top);
         }

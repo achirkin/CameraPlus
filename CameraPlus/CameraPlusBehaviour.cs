@@ -311,10 +311,38 @@ namespace CameraPlus
             _moverPointer.Init(this, _cameraCube);
         }
 
-        protected IEnumerator GetMainCamera()
+        protected virtual void Update()
         {
-            yield return _waitForMainCamera;
-            _mainCamera = Camera.main;
+            if (GetActiveWindow() == System.IntPtr.Zero && _wasWindowActive)
+            {
+                CloseContextMenu();
+                _wasWindowActive = false;
+            }
+            else
+                _wasWindowActive = true;
+
+            // Only toggle the main camera in/out of third person with f1, not any extra cams
+            if (_isMainCamera)
+            {
+                if (Input.GetKeyDown(KeyCode.F1))
+                {
+                    ThirdPerson = !ThirdPerson;
+                    if (!ThirdPerson)
+                    {
+                        transform.position = _mainCamera.transform.position;
+                        transform.rotation = _mainCamera.transform.rotation;
+                    }
+                    else
+                    {
+                        ThirdPersonPos = Config.Position;
+                        ThirdPersonRot = Config.Rotation;
+                    }
+
+                    Config.thirdPerson = ThirdPerson;
+                    Config.Save();
+                }
+            }
+            HandleMouseEvents();
         }
 
         protected virtual void LateUpdate()
@@ -339,6 +367,12 @@ namespace CameraPlus
                     Config.rotationSmooth * Time.unscaledDeltaTime);
             }
             catch { }
+        }
+
+        protected IEnumerator GetMainCamera()
+        {
+            yield return _waitForMainCamera;
+            _mainCamera = Camera.main;
         }
 
         protected virtual void SetFOV()
@@ -372,12 +406,14 @@ namespace CameraPlus
                     return false;
                 }
 
-                if (c.Config.layer == Config.layer && c.Instance._lastRenderUpdate > _lastRenderUpdate)
+                if (c.Config.layer == Config.layer && 
+                    c.Instance._lastRenderUpdate > _lastRenderUpdate)
                 {
                     return false;
                 }
 
-                if (c.Instance._mouseHeld && (c.Instance._isMoving || c.Instance._isResizing || c.Instance._contextMenuOpen))
+                if (c.Instance._mouseHeld && (c.Instance._isMoving || 
+                    c.Instance._isResizing || c.Instance._contextMenuOpen))
                 {
                     return false;
                 }
@@ -393,40 +429,6 @@ namespace CameraPlus
                     return c.Instance;
             }
             return null;
-        }
-
-        protected virtual void Update()
-        {
-            if (GetActiveWindow() == System.IntPtr.Zero && _wasWindowActive)
-            {
-                CloseContextMenu();
-                _wasWindowActive = false;
-            }
-            else
-                _wasWindowActive = true;
-
-            // Only toggle the main camera in/out of third person with f1, not any extra cams
-            if (_isMainCamera)
-            {
-                if (Input.GetKeyDown(KeyCode.F1))
-                {
-                    ThirdPerson = !ThirdPerson;
-                    if (!ThirdPerson)
-                    {
-                        transform.position = _mainCamera.transform.position;
-                        transform.rotation = _mainCamera.transform.rotation;
-                    }
-                    else
-                    {
-                        ThirdPersonPos = Config.Position;
-                        ThirdPersonRot = Config.Rotation;
-                    }
-
-                    Config.thirdPerson = ThirdPerson;
-                    Config.Save();
-                }
-            }
-            HandleMouseEvents();
         }
 
         protected void CloseContextMenu()
@@ -497,11 +499,11 @@ namespace CameraPlus
             if (!_mouseHeld && !_isTopmostAtCursorPos) return;
 
             int tolerance = 10;
-            bool cursorWithinBorder = Utils.TestRange((int)mousePos.x, -tolerance, tolerance) || Utils.TestRange((int)mousePos.y, -tolerance, tolerance) ||
-                Utils.TestRange((int)mousePos.x, Config.screenPosX + Config.screenWidth - tolerance, Config.screenPosX + Config.screenWidth + tolerance) ||
-                Utils.TestRange((int)mousePos.x, Config.screenPosX - tolerance, Config.screenPosX + tolerance) ||
-                Utils.TestRange((int)mousePos.y, Config.screenPosY + Config.screenHeight - tolerance, Config.screenPosY + Config.screenHeight + tolerance) ||
-                Utils.TestRange((int)mousePos.y, Config.screenPosY - tolerance, Config.screenPosY + tolerance);
+            bool cursorWithinBorder = Utils.WithinRange((int)mousePos.x, -tolerance, tolerance) || Utils.WithinRange((int)mousePos.y, -tolerance, tolerance) ||
+                Utils.WithinRange((int)mousePos.x, Config.screenPosX + Config.screenWidth - tolerance, Config.screenPosX + Config.screenWidth + tolerance) ||
+                Utils.WithinRange((int)mousePos.x, Config.screenPosX - tolerance, Config.screenPosX + tolerance) ||
+                Utils.WithinRange((int)mousePos.y, Config.screenPosY + Config.screenHeight - tolerance, Config.screenPosY + Config.screenHeight + tolerance) ||
+                Utils.WithinRange((int)mousePos.y, Config.screenPosY - tolerance, Config.screenPosY + tolerance);
 
             float currentMouseOffsetX = mousePos.x - Config.screenPosX;
             float currentMouseOffsetY = mousePos.y - Config.screenPosY;
@@ -515,8 +517,8 @@ namespace CameraPlus
                     var centerY = Config.screenPosY + (Config.screenHeight / 2);
                     var offsetX = Config.screenWidth / 2 - tolerance;
                     var offsetY = Config.screenHeight / 2 - tolerance;
-                    _xAxisLocked = Utils.TestRange((int)mousePos.x, centerX - offsetX, centerX + offsetX);
-                    _yAxisLocked = Utils.TestRange((int)mousePos.y, centerY - offsetY, centerY + offsetY);
+                    _xAxisLocked = Utils.WithinRange((int)mousePos.x, centerX - offsetX, centerX + offsetX);
+                    _yAxisLocked = Utils.WithinRange((int)mousePos.y, centerY - offsetY, centerY + offsetY);
                     
                     if (_xAxisLocked)
                         SetCursor(CursorType.Vertical);
