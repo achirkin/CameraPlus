@@ -313,7 +313,7 @@ namespace CameraPlus
 
         protected virtual void Update()
         {
-            if (GetActiveWindow() == System.IntPtr.Zero && _wasWindowActive)
+            if (_wasWindowActive && GetActiveWindow() == System.IntPtr.Zero)
             {
                 CloseContextMenu();
                 _wasWindowActive = false;
@@ -453,28 +453,23 @@ namespace CameraPlus
         {
             if (type != currentCursor)
             {
+                Texture2D texture = null;
                 switch (type)
                 {
                     case CursorType.Horizontal:
-                        var _resizeHoriz = Utils.LoadTextureFromResources("CameraPlus.Resources.Resize_Horiz.png");
-                        UnityEngine.Cursor.SetCursor(_resizeHoriz, new Vector2(_resizeHoriz.width / 2, _resizeHoriz.height / 2), CursorMode.Auto);
+                        texture = Utils.LoadTextureFromResources("CameraPlus.Resources.Resize_Horiz.png");
                         break;
                     case CursorType.Vertical:
-                        var _resizeVert = Utils.LoadTextureFromResources("CameraPlus.Resources.Resize_Vert.png");
-                        UnityEngine.Cursor.SetCursor(_resizeVert, new Vector2(_resizeVert.width / 2, _resizeVert.height / 2), CursorMode.Auto);
+                        texture = Utils.LoadTextureFromResources("CameraPlus.Resources.Resize_Vert.png");
                         break;
                     case CursorType.DiagonalRight:
-                        var _resizeDiagRight = Utils.LoadTextureFromResources("CameraPlus.Resources.Resize_DiagRight.png");
-                        UnityEngine.Cursor.SetCursor(_resizeDiagRight, new Vector2(_resizeDiagRight.width / 2, _resizeDiagRight.height / 2), CursorMode.Auto);
+                        texture = Utils.LoadTextureFromResources("CameraPlus.Resources.Resize_DiagRight.png");
                         break;
                     case CursorType.DiagonalLeft:
-                        var _resizeDiagLeft = Utils.LoadTextureFromResources("CameraPlus.Resources.Resize_DiagLeft.png");
-                        UnityEngine.Cursor.SetCursor(_resizeDiagLeft, new Vector2(_resizeDiagLeft.width / 2, _resizeDiagLeft.height / 2), CursorMode.Auto);
-                        break;
-                    case CursorType.None:
-                        UnityEngine.Cursor.SetCursor(null, new Vector2(0, 0), CursorMode.Auto);
+                        texture = Utils.LoadTextureFromResources("CameraPlus.Resources.Resize_DiagLeft.png");
                         break;
                 }
+                UnityEngine.Cursor.SetCursor(texture, texture ? new Vector2(texture.width / 2, texture.height / 2) : new Vector2(0,0), CursorMode.Auto);
                 currentCursor = type;
             }
         }
@@ -498,7 +493,7 @@ namespace CameraPlus
             // Only evaluate mouse events for the topmost render target at the mouse position
             if (!_mouseHeld && !_isTopmostAtCursorPos) return;
 
-            int tolerance = 10;
+            int tolerance = 5;
             bool cursorWithinBorder = Utils.WithinRange((int)mousePos.x, -tolerance, tolerance) || Utils.WithinRange((int)mousePos.y, -tolerance, tolerance) ||
                 Utils.WithinRange((int)mousePos.x, Config.screenPosX + Config.screenWidth - tolerance, Config.screenPosX + Config.screenWidth + tolerance) ||
                 Utils.WithinRange((int)mousePos.x, Config.screenPosX - tolerance, Config.screenPosX + tolerance) ||
@@ -517,8 +512,8 @@ namespace CameraPlus
                     var centerY = Config.screenPosY + (Config.screenHeight / 2);
                     var offsetX = Config.screenWidth / 2 - tolerance;
                     var offsetY = Config.screenHeight / 2 - tolerance;
-                    _xAxisLocked = Utils.WithinRange((int)mousePos.x, centerX - offsetX, centerX + offsetX);
-                    _yAxisLocked = Utils.WithinRange((int)mousePos.y, centerY - offsetY, centerY + offsetY);
+                    _xAxisLocked = Utils.WithinRange((int)mousePos.x, centerX - offsetX + 1, centerX + offsetX - 1);
+                    _yAxisLocked = Utils.WithinRange((int)mousePos.y, centerY - offsetY + 1, centerY + offsetY - 1);
                     
                     if (_xAxisLocked)
                         SetCursor(CursorType.Vertical);

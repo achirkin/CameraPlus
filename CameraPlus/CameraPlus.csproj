@@ -82,7 +82,6 @@
     <Compile Include="CameraPlusInstance.cs" />
     <Compile Include="CameraUtilities.cs" />
     <Compile Include="Config.cs" />
-    <Compile Include="FpsLimiter.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CameraPlusBehaviour.cs" />
