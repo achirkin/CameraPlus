@@ -25,25 +25,25 @@ Edit that file to configure CameraPlus:
 
 | Parameter             | Description                                                                                  |
 |-----------------------|----------------------------------------------------------------------------------------------|
-| fov                   | Horizontal field of view of the camera                                                       |
-| antiAliasing          | Anti-aliasing setting for the camera (1, 2, 4 or 8 only)                                     |
-| renderScale           | The resolution scale of the camera relative to game window (similar to supersampling for VR) |
-| positionSmooth        | How much position should smooth **(SMALLER NUMBER = SMOOTHER)**                              |
-| rotationSmooth        | How much rotation should smooth **(SMALLER NUMBER = SMOOTHER)**                              |
-| thirdPerson           | Whether third person camera is enabled                                                       |
-| showThirdPersonCamera | Whether or not the third person camera is visible                                            |
-| posx                  | X position of third person camera                                                            |
-| posy                  | Y position of third person camera                                                            |
-| posz                  | Z position of third person camera                                                            |
-| angx                  | X rotation of third person camera                                                            |
-| angy                  | Y rotation of third person camera                                                            |
-| angz                  | Z rotation of third person camera                                                            |
-| screenWidth           | Width of the camera render area                                                              |
-| screenHeight          | Height of the camera render area                                                             |
-| screenPosX            | X position of the camera in the Beat Saber window                                            |
-| screenPosY            | Y position of the camera in the Beat Saber window                                            |
-| layer                 | Layer to render the camera on **(HIGHER NUMBER = top)**                                      |
-| movementScriptPath    | Path of the movement script associated with the camera                                       |
+| **fov**                   | Horizontal field of view of the camera                                                       |
+| **antiAliasing**          | Anti-aliasing setting for the camera (1, 2, 4 or 8 only)                                     |
+| **renderScale**           | The resolution scale of the camera relative to game window (similar to supersampling for VR) |
+| **positionSmooth**        | How much position should smooth **(SMALLER NUMBER = SMOOTHER)**                              |
+| **rotationSmooth**        | How much rotation should smooth **(SMALLER NUMBER = SMOOTHER)**                              |
+| **thirdPerson**           | Whether third person camera is enabled                                                       |
+| **showThirdPersonCamera** | Whether or not the third person camera is visible                                            |
+| **posx**                  | X position of third person camera                                                            |
+| **posy**                  | Y position of third person camera                                                            |
+| **posz**                  | Z position of third person camera                                                            |
+| **angx**                  | X rotation of third person camera                                                            |
+| **angy**                  | Y rotation of third person camera                                                            |
+| **angz**                  | Z rotation of third person camera                                                            |
+| **screenWidth**           | Width of the camera render area                                                              |
+| **screenHeight**          | Height of the camera render area                                                             |
+| **screenPosX**            | X position of the camera in the Beat Saber window                                            |
+| **screenPosY**            | Y position of the camera in the Beat Saber window                                            |
+| **layer**                 | Layer to render the camera on **(HIGHER NUMBER = top)**                                      |
+| **movementScriptPath**    | Path of the movement script associated with the camera                                       |
 
 If you need help, ask us at the Beat Saber Mod Group Discord Server:  
 https://discord.gg/BeatSaberMods
