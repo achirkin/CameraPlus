@@ -16,25 +16,34 @@ Plugin for Beat Saber for a smoother and wider FOV camera.
 		(The folder that contains Beat Saber.exe)
 	3b. Done! You've installed the Custom Avatar Plugin.
 # Usage
-Press <kbd>F1</kbd> to toggle between first and third person.
+To edit the settings of any camera in real time, right click on the Beat Saber game window! A context menu will appear with options specific to the camera that you right clicked on!
 
-After you run the game once, a `cameraplus.cfg` file is created within the Beat Saber folder.  
+Press <kbd>F1</kbd> to toggle the main camera between first and third person.
+
+After you run the game once, a `cameraplus.cfg` file is created within the folder Beat Saber\UserData\CameraPlus. Any cfg files located in this folder will be used to render additional cameras.
 Edit that file to configure CameraPlus:
 
-`fov=90.0` Horizontal field of view of the camera  
-`fps=90.0` Frame rate of the camera  
-`antiAliasing=2` Anti-aliasing setting for the camera (1, 2, 4 or 8 only)  
-`renderScale` The resolution scale of the camera relative to game window (similar to supersampling for VR)  
-`positionSmooth=10.0` How much position should smooth **(SMALLER NUMBER = SMOOTHER)**  
-`rotationSmooth=5.0` How much rotation should smooth **(SMALLER NUMBER = SMOOTHER)**  
-`thirdPerson=false` Whether third person camera is enabled  
-
-`posx=0` X position of third person camera  
-`posy=0` Y position of third person camera  
-`posz=0` Z position of third person camera  
-`angx=0` X rotation of third person camera  
-`angy=0` Y rotation of third person camera  
-`angz=0` Z rotation of third person camera  
+| Parameter             | Description                                                                                  |
+|-----------------------|----------------------------------------------------------------------------------------------|
+| fov                   | Horizontal field of view of the camera                                                       |
+| antiAliasing          | Anti-aliasing setting for the camera (1, 2, 4 or 8 only)                                     |
+| renderScale           | The resolution scale of the camera relative to game window (similar to supersampling for VR) |
+| positionSmooth        | How much position should smooth **(SMALLER NUMBER = SMOOTHER)**                              |
+| rotationSmooth        | How much rotation should smooth **(SMALLER NUMBER = SMOOTHER)**                              |
+| thirdPerson           | Whether third person camera is enabled                                                       |
+| showThirdPersonCamera | Whether or not the third person camera is visible                                            |
+| posx                  | X position of third person camera                                                            |
+| posy                  | Y position of third person camera                                                            |
+| posz                  | Z position of third person camera                                                            |
+| angx                  | X rotation of third person camera                                                            |
+| angy                  | Y rotation of third person camera                                                            |
+| angz                  | Z rotation of third person camera                                                            |
+| screenWidth           | Width of the camera render area                                                              |
+| screenHeight          | Height of the camera render area                                                             |
+| screenPosX            | X position of the camera in the Beat Saber window                                            |
+| screenPosY            | Y position of the camera in the Beat Saber window                                            |
+| layer                 | Layer to render the camera on **(HIGHER NUMBER = top)**                                      |
+| movementScriptPath    | Path of the movement script associated with the camera                                       |
 
 If you need help, ask us at the Beat Saber Mod Group Discord Server:  
 https://discord.gg/BeatSaberMods
