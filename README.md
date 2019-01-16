@@ -1,11 +1,11 @@
 # CameraPlus
-Allows for multiple wide FOV cameras with smoothed movement, which makes for a much more pleasant overall spectator experience.
+CameraPlus is a Beat Saber mod that allows for multiple wide FOV cameras with smoothed movement, which makes for a much more pleasant overall spectator experience.
 
 [Video Comparison](https://youtu.be/MysLXKSXGTY)  
 [Third Person Preview](https://youtu.be/ltIhpt-n6b8)
 
 # Installing
-1. Use the mod installer: https://github.com/Umbranoxio/BeatSaberModInstaller/releases
+1. Use the modsaber installer: https://github.com/lolPants/modsaber-installer/releases
 		It is the easiest method, it will do all these steps below in 1 click.
 	
 ### To install manually:
