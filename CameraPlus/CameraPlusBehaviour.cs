@@ -136,7 +136,15 @@ namespace CameraPlus
             DestroyImmediate(gameObj.GetComponent("CameraRenderCallbacksManager"));
             DestroyImmediate(gameObj.GetComponent("AudioListener"));
             DestroyImmediate(gameObj.GetComponent("MeshCollider"));
+            
+            _cam = gameObj.GetComponent<Camera>();
+            _cam.stereoTargetEye = StereoTargetEyeMask.None;
+            _cam.enabled = true;
+            _cam.name = Path.GetFileName(Config.FilePath);
 
+            var _liv = _cam.GetComponent<LIV.SDK.Unity.LIV>();
+            if (_liv)
+                Destroy(_liv);
 
             if (SteamVRCompatibility.IsAvailable)
             {
@@ -150,11 +158,6 @@ namespace CameraPlus
             {
                 _previewMaterial = new Material(Shader.Find("Hidden/BlitCopyWithDepth"));
             }
-
-            _cam = gameObj.GetComponent<Camera>();
-            _cam.stereoTargetEye = StereoTargetEyeMask.None;
-            _cam.enabled = true;
-            _cam.name = Path.GetFileName(Config.FilePath);
 
             gameObj.SetActive(true);
 
