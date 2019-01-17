@@ -146,12 +146,6 @@ namespace CameraPlus
             if (_liv)
                 Destroy(_liv);
 
-            if (SteamVRCompatibility.IsAvailable)
-            {
-                DestroyImmediate(gameObj.GetComponent(SteamVRCompatibility.SteamVRCamera));
-                DestroyImmediate(gameObj.GetComponent(SteamVRCompatibility.SteamVRFade));
-            }
-
             _screenCamera = new GameObject("Screen Camera").AddComponent<ScreenCameraBehaviour>();
 
             if (_previewMaterial == null)
