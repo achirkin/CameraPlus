@@ -75,6 +75,8 @@ namespace CameraPlus
         protected int _prevAA;
         protected float _prevRenderScale;
         protected int _prevLayer;
+        protected int _prevScreenPosX, _prevScreenPosY;
+        protected bool _prevFitToCanvas;
         protected float _aspectRatio;
 
         protected bool _wasWindowActive = false;
@@ -252,7 +254,7 @@ namespace CameraPlus
                 }
                 else
                 {
-                    if (Config.antiAliasing != _prevAA || Config.renderScale != _prevRenderScale || Config.screenHeight != _prevScreenHeight || Config.screenWidth != _prevScreenWidth || Config.layer != _prevLayer)
+                    if (Config.fitToCanvas != _prevFitToCanvas || Config.antiAliasing != _prevAA || Config.screenPosX != _prevScreenPosX || Config.screenPosY != _prevScreenPosY || Config.renderScale != _prevRenderScale || Config.screenHeight != _prevScreenHeight || Config.screenWidth != _prevScreenWidth || Config.layer != _prevLayer)
                     {
                         replace = true;
 
@@ -261,11 +263,6 @@ namespace CameraPlus
                         _screenCamera.SetCameraInfo(new Vector2(0, 0), new Vector2(0, 0), -1000);
 
                         _camRenderTexture.Release();
-
-                        _prevAA = Config.antiAliasing;
-                        _prevRenderScale = Config.renderScale;
-                        _prevScreenHeight = Config.screenHeight;
-                        _prevScreenWidth = Config.screenWidth;
                     }
                 }
 
@@ -273,6 +270,14 @@ namespace CameraPlus
                 {
                     Plugin.Log("Don't need to replace");
                     return;
+                }
+
+                if(Config.fitToCanvas)
+                {
+                    Config.screenPosX = 0;
+                    Config.screenPosY = 0;
+                    Config.screenWidth = Screen.width;
+                    Config.screenHeight = Screen.height;
                 }
 
                 _lastRenderUpdate = DateTime.Now;
@@ -288,6 +293,15 @@ namespace CameraPlus
                 _previewMaterial.SetTexture("_MainTex", _camRenderTexture);
                 _screenCamera.SetRenderTexture(_camRenderTexture);
                 _screenCamera.SetCameraInfo(Config.ScreenPosition, Config.ScreenSize, Config.layer);
+
+                _prevFitToCanvas = Config.fitToCanvas;
+                _prevAA = Config.antiAliasing;
+                _prevRenderScale = Config.renderScale;
+                _prevScreenHeight = Config.screenHeight;
+                _prevScreenWidth = Config.screenWidth;
+                _prevLayer = Config.layer;
+                _prevScreenPosX = Config.screenPosX;
+                _prevScreenPosY = Config.screenPosY;
             });
         }
 
@@ -672,9 +686,9 @@ namespace CameraPlus
                 _menuStrip.Items.Add(Config.showThirdPersonCamera ? "Hide Third Person Camera" : "Show Third Person Camera", null, (p1, p2) =>
                 {
                     Config.showThirdPersonCamera = !Config.showThirdPersonCamera;
+                    Config.Save();
                     CreateScreenRenderTexture();
                     CloseContextMenu();
-                    Config.Save();
                 });
 
                 // Hides/unhides the third person camera that appears when a camera is in third person mode
@@ -689,9 +703,10 @@ namespace CameraPlus
                 });
             }
             _menuStrip.Items.Add(new ToolStripSeparator());
-
+            
             var _layoutMenu = new ToolStripMenuItem("Layout");
             _controlTracker.Add(_layoutMenu);
+
             // Sets the layer associated with the current camera
             _layoutMenu.DropDownItems.Add(new ToolStripLabel("Layer"));
             var _layerBox = new ToolStripNumberControl();
@@ -706,6 +721,42 @@ namespace CameraPlus
                 Config.Save();
             };
             _layoutMenu.DropDownItems.Add(_layerBox);
+
+            // FOV
+            _layoutMenu.DropDownItems.Add(new ToolStripLabel("FOV"));
+            var _fov = new ToolStripNumberControl();
+            _controlTracker.Add(_fov);
+            _fov.Maximum = Screen.width;
+            _fov.Minimum = 0;
+            _fov.Value = (decimal)Config.fov;
+
+            _fov.ValueChanged += (sender, args) =>
+            {
+                Config.fov = (int)_fov.Value;
+                SetFOV();
+                CreateScreenRenderTexture();
+                Config.Save();
+            };
+            _layoutMenu.DropDownItems.Add(_fov);
+
+            // Render Scale
+            _layoutMenu.DropDownItems.Add(new ToolStripLabel("Render Scale"));
+            var _renderScale = new ToolStripNumberControl();
+            _controlTracker.Add(_renderScale);
+            _renderScale.Maximum = 4;
+            _renderScale.Minimum = 0.1M;
+            _renderScale.Increment = 0.1M;
+            _renderScale.DecimalPlaces = 1;
+            _renderScale.Value = (decimal)Config.renderScale;
+
+            _renderScale.ValueChanged += (sender, args) =>
+            {
+                Config.renderScale = (float)_renderScale.Value;
+                CreateScreenRenderTexture();
+                Config.Save();
+            };
+            _layoutMenu.DropDownItems.Add(_renderScale);
+            
 
             // Sets the size of the current cameras pixelrect
             _layoutMenu.DropDownItems.Add(new ToolStripLabel("Size"));
@@ -762,24 +813,32 @@ namespace CameraPlus
                 Config.Save();
             };
             _layoutMenu.DropDownItems.Add(_yBox);
-            _menuStrip.Items.Add(_layoutMenu);
 
-            // FOV
-            _layoutMenu.DropDownItems.Add(new ToolStripLabel("FOV"));
-            var _fov = new ToolStripNumberControl();
-            _controlTracker.Add(_fov);
-            _fov.Maximum = Screen.width;
-            _fov.Minimum = 0;
-            _fov.Value = (decimal)Config.fov;
-
-            _fov.ValueChanged += (sender, args) =>
+            
+            // Fit to canvas checkbox
+            var _fitToCanvasBox = new ToolStripCheckBox("Fit to Canvas");
+            _controlTracker.Add(_fitToCanvasBox);
+            _fitToCanvasBox.Checked = Config.fitToCanvas;
+            _fitToCanvasBox.CheckedChanged += (sender, args) =>
             {
-                Config.fov = (int)_fov.Value;
-                SetFOV();
+                Config.fitToCanvas = _fitToCanvasBox.Checked;
+                _widthBox.Enabled = !Config.fitToCanvas;
+                _heightBox.Enabled = !Config.fitToCanvas;
+                _xBox.Enabled = !Config.fitToCanvas;
+                _yBox.Enabled = !Config.fitToCanvas;
                 CreateScreenRenderTexture();
                 Config.Save();
             };
-            _layoutMenu.DropDownItems.Add(_fov);
+            _layoutMenu.DropDownItems.Add(_fitToCanvasBox);
+
+            // Finally, add our layout menu to the main menustrip
+            _menuStrip.Items.Add(_layoutMenu);
+
+            // Set the initial state for our width/height boxes depending on whether or not fitToCanvas is enabled
+            _widthBox.Enabled = !Config.fitToCanvas;
+            _heightBox.Enabled = !Config.fitToCanvas;
+            _xBox.Enabled = !Config.fitToCanvas;
+            _yBox.Enabled = !Config.fitToCanvas;
 
             // Scripts submenu
             var _scriptsMenu = new ToolStripMenuItem("Scripts");

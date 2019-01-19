@@ -52,6 +52,30 @@ namespace CameraPlus
             }
         }
 
+        public decimal Increment
+        {
+            get
+            {
+                return (Control as NumericUpDown).Increment;
+            }
+            set
+            {
+                (Control as NumericUpDown).Increment = value;
+            }
+        }
+
+        public int DecimalPlaces
+        {
+            get
+            {
+                return (Control as NumericUpDown).DecimalPlaces;
+            }
+            set
+            {
+                (Control as NumericUpDown).DecimalPlaces = value;
+            }
+        }
+
         public decimal Value
         {
             get
@@ -66,7 +90,7 @@ namespace CameraPlus
 
         public event EventHandler ValueChanged;
 
-        public Control NumericUpDownControl
+        public NumericUpDown NumericUpDownControl
         {
             get { return Control as NumericUpDown; }
         }

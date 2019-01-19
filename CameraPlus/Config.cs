@@ -31,6 +31,8 @@ namespace CameraPlus
 
         public int layer = -1000;
 
+        public bool fitToCanvas = false;
+
         public string movementScriptPath = String.Empty;
         //public int maxFps = 90;
 
@@ -54,20 +56,20 @@ namespace CameraPlus
                 return new Vector2(screenWidth, screenHeight);
             }
         }
-		
-		public Vector3 Position
-		{
-			get
-			{
-				return new Vector3(posx, posy, posz);
-			}
+
+        public Vector3 Position
+        {
+            get
+            {
+                return new Vector3(posx, posy, posz);
+            }
             set
             {
                 posx = value.x;
                 posy = value.y;
                 posz = value.z;
             }
-		}
+        }
 
         public Vector3 DefaultPosition
         {
@@ -77,9 +79,9 @@ namespace CameraPlus
             }
         }
 
-		public Vector3 Rotation
-		{
-			get
+        public Vector3 Rotation
+        {
+            get
             {
                 return new Vector3(angx, angy, angz);
             }
@@ -89,7 +91,7 @@ namespace CameraPlus
                 angy = value.y;
                 angz = value.z;
             }
-		}
+        }
 
         public Vector3 DefaultRotation
         {
@@ -99,82 +101,87 @@ namespace CameraPlus
             }
         }
 
-		public Config(string filePath)
-		{
-			FilePath = filePath;
+        public Config(string filePath)
+        {
+            FilePath = filePath;
 
             if (!Directory.Exists(Path.GetDirectoryName(FilePath)))
                 Directory.CreateDirectory(Path.GetDirectoryName(FilePath));
 
             if (File.Exists(FilePath))
-			{
-				Load();
-				var text = File.ReadAllText(FilePath);
-				if (text.Contains("rotx"))
-				{
-					var oldRotConfig = new OldRotConfig();
-					ConfigSerializer.LoadConfig(oldRotConfig, FilePath);
+            {
+                Load();
+                var text = File.ReadAllText(FilePath);
+                if (!text.Contains("fitToCanvas") && Path.GetFileName(FilePath) == "cameraplus.cfg")
+                {
+                    fitToCanvas = true;
+                    Save();
+                }
+                if (text.Contains("rotx"))
+                {
+                    var oldRotConfig = new OldRotConfig();
+                    ConfigSerializer.LoadConfig(oldRotConfig, FilePath);
 
-					var euler = new Quaternion(oldRotConfig.rotx, oldRotConfig.roty, oldRotConfig.rotz, oldRotConfig.rotw).eulerAngles;
-					angx = euler.x;
-					angy = euler.y;
-					angz = euler.z;
+                    var euler = new Quaternion(oldRotConfig.rotx, oldRotConfig.roty, oldRotConfig.rotz, oldRotConfig.rotw).eulerAngles;
+                    angx = euler.x;
+                    angy = euler.y;
+                    angz = euler.z;
 
-					Save();
-				}
-			}
-			else
-			{
-				Save();
-			}
+                    Save();
+                }
+            }
+            else
+            {
+                Save();
+            }
 
             _configWatcher = new FileSystemWatcher(Path.GetDirectoryName(FilePath))
-			{
-				NotifyFilter = NotifyFilters.LastWrite,
-				Filter = Path.GetFileName(FilePath),
-				EnableRaisingEvents = true
-			};
-			_configWatcher.Changed += ConfigWatcherOnChanged;
-		}
-
-		~Config()
-		{
-			_configWatcher.Changed -= ConfigWatcherOnChanged;
-		}
-
-		public void Save()
-		{
-			_saving = true;
-			ConfigSerializer.SaveConfig(this, FilePath);
+            {
+                NotifyFilter = NotifyFilters.LastWrite,
+                Filter = Path.GetFileName(FilePath),
+                EnableRaisingEvents = true
+            };
+            _configWatcher.Changed += ConfigWatcherOnChanged;
         }
 
-		public void Load()
-		{
-			ConfigSerializer.LoadConfig(this, FilePath);
-		}
-		
-		private void ConfigWatcherOnChanged(object sender, FileSystemEventArgs fileSystemEventArgs)
-		{
-			if (_saving)
-			{
-				_saving = false;
-				return;
-			}
-			
-			Load();
-			
-			if (ConfigChangedEvent != null)
-			{
-				ConfigChangedEvent(this);
-			}
-		}
-		
-		public class OldRotConfig
-		{
-			public float rotx;
-			public float roty;
-			public float rotz;
-			public float rotw;
-		}
-	}
+        ~Config()
+        {
+            _configWatcher.Changed -= ConfigWatcherOnChanged;
+        }
+
+        public void Save()
+        {
+            _saving = true;
+            ConfigSerializer.SaveConfig(this, FilePath);
+        }
+
+        public void Load()
+        {
+            ConfigSerializer.LoadConfig(this, FilePath);
+        }
+
+        private void ConfigWatcherOnChanged(object sender, FileSystemEventArgs fileSystemEventArgs)
+        {
+            if (_saving)
+            {
+                _saving = false;
+                return;
+            }
+
+            Load();
+
+            if (ConfigChangedEvent != null)
+            {
+                ConfigChangedEvent(this);
+            }
+        }
+
+        public class OldRotConfig
+        {
+            public float rotx;
+            public float roty;
+            public float rotz;
+            public float rotw;
+        }
+    }
 }
