@@ -237,7 +237,7 @@ namespace CameraPlus
                 ThirdPersonPos = Config.Position;
                 ThirdPersonRot = Config.Rotation;
             }
-
+            
             CreateScreenRenderTexture();
             SetFOV();
         }
@@ -268,7 +268,7 @@ namespace CameraPlus
 
                 if (!replace)
                 {
-                    Plugin.Log("Don't need to replace");
+                    //Plugin.Log("Don't need to replace");
                     return;
                 }
 
@@ -331,6 +331,7 @@ namespace CameraPlus
             }
             else
                 _wasWindowActive = true;
+            
 
             // Only toggle the main camera in/out of third person with f1, not any extra cams
             if (_isMainCamera)
@@ -389,11 +390,7 @@ namespace CameraPlus
         protected virtual void SetFOV()
         {
             if (_cam == null) return;
-            var fov = (float)(57.2957801818848 *
-                               (2.0 * Mathf.Atan(
-                                    Mathf.Tan((float)(Config.fov * (Math.PI / 180.0) * 0.5)) /
-                                    (Config.screenWidth/Config.screenHeight))));
-            _cam.fieldOfView = fov;
+            _cam.fieldOfView = 2 * Mathf.Atan(Mathf.Tan(Config.fov * Mathf.Deg2Rad * 0.5f) / (Config.ScreenSize.x/Config.ScreenSize.y)) * Mathf.Rad2Deg;
         }
 
         public bool IsWithinRenderArea(Vector2 mousePos, Config c)
@@ -596,7 +593,7 @@ namespace CameraPlus
                 if (_mouseHeld) return;
                 if (_menuStrip == null)
                 {
-                    SetupContextMenu();
+                    DisplayContextMenu();
                     _contextMenuOpen = true;
                 }
                 _menuStrip.SetBounds(Cursor.Position.X, Cursor.Position.Y, 0, 0);
@@ -621,7 +618,7 @@ namespace CameraPlus
             }
         }
 
-        void SetupContextMenu()
+        void DisplayContextMenu()
         {
             _menuStrip = new ContextMenuStrip();
             // Adds a new camera into the scene
