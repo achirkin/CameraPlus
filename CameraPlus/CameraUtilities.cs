@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace CameraPlus
 {
@@ -22,6 +16,17 @@ namespace CameraPlus
             string path = Path.Combine(Environment.CurrentDirectory, "UserData\\CameraPlus\\" + cameraName + ".cfg");
             if (!File.Exists(path))
             {
+                // Try to copy their old config file into the new camera location
+                if(cameraName == "cameraplus")
+                {
+                    string oldPath = Path.Combine(Environment.CurrentDirectory, "cameraplus.cfg");
+                    if (File.Exists(oldPath))
+                    {
+                        File.Move(oldPath, path);
+                        Plugin.Log("Copied old cameraplus.cfg into new CameraPlus folder in UserData");
+                    }
+                }
+
                 Config config = null;
                 if (CopyConfig != null)
                     File.Copy(CopyConfig.FilePath, path, true);
