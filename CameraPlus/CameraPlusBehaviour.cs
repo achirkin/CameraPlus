@@ -390,7 +390,7 @@ namespace CameraPlus
         protected virtual void SetFOV()
         {
             if (_cam == null) return;
-            _cam.fieldOfView = 2 * Mathf.Atan(Mathf.Tan(Config.fov * Mathf.Deg2Rad * 0.5f) / (Config.ScreenSize.x/Config.ScreenSize.y)) * Mathf.Rad2Deg;
+            _cam.fieldOfView = Config.fov;
         }
 
         public bool IsWithinRenderArea(Vector2 mousePos, Config c)
