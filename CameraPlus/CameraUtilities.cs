@@ -22,6 +22,9 @@ namespace CameraPlus
                     string oldPath = Path.Combine(Environment.CurrentDirectory, "cameraplus.cfg");
                     if (File.Exists(oldPath))
                     {
+                        if (!Directory.Exists(Path.GetDirectoryName(path)))
+                            Directory.CreateDirectory(Path.GetDirectoryName(path));
+
                         File.Move(oldPath, path);
                         Plugin.Log("Copied old cameraplus.cfg into new CameraPlus folder in UserData");
                     }
