@@ -522,15 +522,18 @@ namespace CameraPlus
                     var offsetY = Config.screenHeight / 2 - tolerance;
                     _xAxisLocked = Utils.WithinRange((int)mousePos.x, centerX - offsetX + 1, centerX + offsetX - 1);
                     _yAxisLocked = Utils.WithinRange((int)mousePos.y, centerY - offsetY + 1, centerY + offsetY - 1);
-                    
-                    if (_xAxisLocked)
-                        SetCursor(CursorType.Vertical);
-                    else if (_yAxisLocked)
-                        SetCursor(CursorType.Horizontal);
-                    else if (isLeft && isBottom || !isLeft && !isBottom)
-                        SetCursor(CursorType.DiagonalLeft);
-                    else if (isLeft && !isBottom || !isLeft && isBottom)
-                        SetCursor(CursorType.DiagonalRight);
+
+                    if (!Config.fitToCanvas)
+                    {
+                        if (_xAxisLocked)
+                            SetCursor(CursorType.Vertical);
+                        else if (_yAxisLocked)
+                            SetCursor(CursorType.Horizontal);
+                        else if (isLeft && isBottom || !isLeft && !isBottom)
+                            SetCursor(CursorType.DiagonalLeft);
+                        else if (isLeft && !isBottom || !isLeft && isBottom)
+                            SetCursor(CursorType.DiagonalRight);
+                    }
                     wasWithinBorder = true;
                 }
                 else if (!cursorWithinBorder && wasWithinBorder)
@@ -540,7 +543,7 @@ namespace CameraPlus
                 }
             }
 
-            if (holdingLeftClick)
+            if (holdingLeftClick && !Config.fitToCanvas)
             {
                 if (!_mouseHeld)
                 {
