@@ -6,7 +6,7 @@ using System;
 using System.Linq;
 using UnityEngine.SceneManagement;
 using CameraPlus.SimpleJSON;
-
+using System.Reflection;
 
 namespace CameraPlus
 {
@@ -258,6 +258,16 @@ namespace CameraPlus
                 float f = ((2 * p) - 2);
                 return 0.5f * f * f * f + 1;
             }
+        }
+
+        public static void CreateExampleScript()
+        {
+            string path = Path.Combine(Environment.CurrentDirectory, "UserData", "CameraPlus", "Scripts");
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+            string defaultScript = Path.Combine(path, "ExampleMovementScript.json");
+            if (!File.Exists(defaultScript))
+                File.WriteAllBytes(defaultScript, Utils.GetResource(Assembly.GetExecutingAssembly(), "CameraPlus.Resources.ExampleMovementScript.json"));
         }
     }
 }

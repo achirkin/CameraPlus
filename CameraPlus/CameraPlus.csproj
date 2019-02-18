@@ -106,7 +106,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <EmbeddedResource Include="Resources\CameraMovementData.json" />
+    <EmbeddedResource Include="Resources\ExampleMovementScript.json" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Resize_DiagLeft.png" />

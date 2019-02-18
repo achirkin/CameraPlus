@@ -193,6 +193,8 @@ namespace CameraPlus
             if (Config.movementScriptPath != String.Empty)
                 AddMovementScript();
 
+            CameraMovement.CreateExampleScript();
+
             Plugin.Instance.ActiveSceneChanged += SceneManager_activeSceneChanged;
 
             SceneManager_activeSceneChanged(new Scene(), new Scene());
@@ -866,14 +868,8 @@ namespace CameraPlus
             ToolStripItem _addCameraMovement = _addMenu.DropDownItems.Add("Camera Movement", null, (p1, p2) =>
             {
                 OpenFileDialog ofd = new OpenFileDialog();
-                string path = Path.Combine(Environment.CurrentDirectory, "UserData\\CameraPlus\\Scripts");
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
-
-                string defaultScript = Path.Combine(path, "CameraMovementData.json");
-                if (!File.Exists(defaultScript))
-                    File.WriteAllBytes(defaultScript, Utils.GetResource(Assembly.GetExecutingAssembly(), "CameraPlus.Resources.CameraMovementData.json"));
-
+                string path = Path.Combine(Environment.CurrentDirectory, "UserData", "CameraPlus", "Scripts");
+                CameraMovement.CreateExampleScript();
                 ofd.InitialDirectory = path;
                 ofd.Title = "Select a script";
                 ofd.FileOk += (sender, e) => {

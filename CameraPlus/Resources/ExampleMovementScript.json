@@ -2,29 +2,29 @@
   "ActiveInPauseMenu": true, // determines whether or not pausing the game will pause the camera
   "Movements": [
     {
-      "StartPos": {
+      "StartPos": { // The position the camera should start at (center of your play area is 0,0,0)
         "x": 2,
         "y": 1.75,
         "z": -2
       },
-      "StartRot": {
+      "StartRot": { // The rotation the camera should start at (0,0,0 will be looking straight at the main menu)
         "x": 15,
         "y": -15,
         "z": 0
       },
-      "EndPos": {
+      "EndPos": { // The position the camera should end at
         "x": 2,
         "y": 1,
         "z": 9
       },
-      "EndRot": {
+      "EndRot": { // The rotation the camera should end at
         "x": 15,
         "y": -40,
         "z": 0
       },
-      "Duration": 4,
-      "Delay": 0,
-	  "EaseTransition": true // if false, transition between start/end will be linear
+      "Duration": 4, // The amount of time the transition will take between the start/end position/rotation
+      "Delay": 0, // The amount of time to wait before going onto the next movement
+	  "EaseTransition": true // If false, transition between start/end will be linear, otherwise it will start slow and move faster over the duration of the transition
     },
     {
       "StartPos": {
