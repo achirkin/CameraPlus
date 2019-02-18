@@ -1,4 +1,5 @@
 {
+  "ActiveInPauseMenu": true, // determines whether or not pausing the game will pause the camera
   "Movements": [
     {
       "StartPos": {
@@ -22,7 +23,8 @@
         "z": 0
       },
       "Duration": 4,
-      "Delay": 0
+      "Delay": 0,
+	  "EaseTransition": true // if false, transition between start/end will be linear
     },
     {
       "StartPos": {
@@ -46,7 +48,8 @@
         "z": 0
       },
       "Duration": 4,
-      "Delay": 0
+      "Delay": 0,
+	  "EaseTransition": true
     },
     {
       "StartPos": {
@@ -70,7 +73,8 @@
         "z": 0
       },
       "Duration": 4,
-      "Delay": 0
+      "Delay": 0,
+	  "EaseTransition": true
     },
     {
       "StartPos": {
@@ -94,7 +98,8 @@
         "z": 0
       },
       "Duration": 4,
-      "Delay": 0
+      "Delay": 0,
+	  "EaseTransition": true
     },
     {
       "StartPos": {
@@ -118,7 +123,8 @@
         "z": 0
       },
       "Duration": 4,
-      "Delay": 0
+      "Delay": 0,
+	  "EaseTransition": true
     },
     {
       "StartPos": {
@@ -142,7 +148,8 @@
         "z": 0
       },
       "Duration": 4,
-      "Delay": 0
+      "Delay": 0,
+	  "EaseTransition": true
     }
   ]
 }

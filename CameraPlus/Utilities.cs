@@ -1,4 +1,6 @@
-﻿using System;
+﻿using IllusionInjector;
+using IllusionPlugin;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -49,6 +51,18 @@ namespace CameraPlus
         public static bool WithinRange(int numberToCheck, int bottom, int top)
         {
             return (numberToCheck >= bottom && numberToCheck <= top);
+        }
+
+        public static bool IsModInstalled(string modName)
+        {
+            foreach (IPlugin p in PluginManager.Plugins)
+            {
+                if (p.Name == modName)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

@@ -96,14 +96,12 @@ namespace CameraPlus
         protected bool _isBottom = false, _isLeft = false;
         protected ContextMenuStrip _menuStrip = new ContextMenuStrip();
         protected List<ToolStripItem> _controlTracker = new List<ToolStripItem>();
-
+        
         public static CursorType currentCursor = CursorType.None;
         public static bool wasWithinBorder = false;
         public static bool anyInstanceBusy = false;
-
-        [DllImport("user32.dll")]
-        static extern System.IntPtr GetActiveWindow();
-
+        private static bool _contextMenuEnabled = true;
+        
         public virtual void Init(Config config)
         {
             DontDestroyOnLoad(gameObject);
@@ -111,7 +109,7 @@ namespace CameraPlus
 
             Config = config;
             _isMainCamera = Path.GetFileName(Config.FilePath) == "cameraplus.cfg";
-
+            _contextMenuEnabled = !Environment.CommandLine.Contains("fpfc");
 
             StartCoroutine(DelayedInit());
         }
@@ -126,11 +124,7 @@ namespace CameraPlus
             Config.ConfigChangedEvent += PluginOnConfigChangedEvent;
 
             var gameObj = Instantiate(_mainCamera.gameObject);
-
-            _cameraMovement = gameObj.AddComponent<CameraMovement>();
-            if (Config.movementScriptPath != String.Empty)
-                _cameraMovement.Init(this);
-
+            
             gameObj.SetActive(false);
             gameObj.name = "Camera Plus";
             gameObj.tag = "Untagged";
@@ -143,7 +137,7 @@ namespace CameraPlus
             _cam.stereoTargetEye = StereoTargetEyeMask.None;
             _cam.enabled = true;
             _cam.name = Path.GetFileName(Config.FilePath);
-
+            
             var _liv = _cam.GetComponent<LIV.SDK.Unity.LIV>();
             if (_liv)
                 Destroy(_liv);
@@ -151,9 +145,7 @@ namespace CameraPlus
             _screenCamera = new GameObject("Screen Camera").AddComponent<ScreenCameraBehaviour>();
 
             if (_previewMaterial == null)
-            {
                 _previewMaterial = new Material(Shader.Find("Hidden/BlitCopyWithDepth"));
-            }
 
             gameObj.SetActive(true);
 
@@ -182,7 +174,7 @@ namespace CameraPlus
             _quad.transform.localEulerAngles = new Vector3(0, 180, 0);
             _quad.transform.localScale = new Vector3(_cam.aspect, 1, 1);
             _cameraPreviewQuad = _quad;
-
+            
             ReadConfig();
 
             if (ThirdPerson)
@@ -197,6 +189,12 @@ namespace CameraPlus
                 _cameraCube.eulerAngles = ThirdPersonRot;
             }
 
+            // Add our camera movement script if the movement script path is set
+            if (Config.movementScriptPath != String.Empty)
+                AddMovementScript();
+
+            Plugin.Instance.ActiveSceneChanged += SceneManager_activeSceneChanged;
+
             SceneManager_activeSceneChanged(new Scene(), new Scene());
             Plugin.Log($"Camera \"{Path.GetFileName(Config.FilePath)} successfully initialized!\"");
         }
@@ -204,6 +202,9 @@ namespace CameraPlus
         protected virtual void OnDestroy()
         {
             Config.ConfigChangedEvent -= PluginOnConfigChangedEvent;
+            Plugin.Instance.ActiveSceneChanged -= SceneManager_activeSceneChanged;
+
+            _cameraMovement?.Shutdown();
 
             // Close our context menu if its open, and destroy all associated controls, otherwise the game will lock up
             CloseContextMenu();
@@ -304,14 +305,7 @@ namespace CameraPlus
                 _prevScreenPosY = Config.screenPosY;
             });
         }
-
-        protected virtual void GetScaledScreenResolution(float scale, out int scaledWidth, out int scaledHeight)
-        {
-            _aspectRatio = (float)Screen.height / Screen.width;
-            scaledWidth = Mathf.Clamp(Mathf.RoundToInt(Screen.width * scale), 1, int.MaxValue);
-            scaledHeight = Mathf.Clamp(Mathf.RoundToInt(scaledWidth * _aspectRatio), 1, int.MaxValue);
-        }
-
+        
         public virtual void SceneManager_activeSceneChanged(Scene from, Scene to)
         {
             StartCoroutine(GetMainCamera());
@@ -321,18 +315,15 @@ namespace CameraPlus
             _moverPointer = pointer.gameObject.AddComponent<CameraMoverPointer>();
             _moverPointer.Init(this, _cameraCube);
         }
-
-        protected virtual void Update()
+        
+        protected void OnApplicationFocus(bool hasFocus)
         {
-            if (_wasWindowActive && GetActiveWindow() == System.IntPtr.Zero)
-            {
+            if(!hasFocus)
                 CloseContextMenu();
-                _wasWindowActive = false;
-            }
-            else
-                _wasWindowActive = true;
-            
+        }
 
+        protected virtual void FixedUpdate()
+        {
             // Only toggle the main camera in/out of third person with f1, not any extra cams
             if (_isMainCamera)
             {
@@ -379,6 +370,31 @@ namespace CameraPlus
                     Config.rotationSmooth * Time.unscaledDeltaTime);
             }
             catch { }
+        }
+
+        protected void AddMovementScript()
+        {
+            if (Config.movementScriptPath != String.Empty)
+            {
+                if (_cameraMovement)
+                    _cameraMovement.Shutdown();
+
+                if (Config.movementScriptPath == "SongMovementScript")
+                    _cameraMovement = _cam.gameObject.AddComponent<SongCameraMovement>();
+                else if (File.Exists(Config.movementScriptPath))
+                    _cameraMovement = _cam.gameObject.AddComponent<CameraMovement>();
+                else
+                    return;
+
+                if (_cameraMovement.Init(this))
+                {
+                    ThirdPersonPos = Config.Position;
+                    ThirdPersonRot = Config.Rotation;
+                    Config.thirdPerson = true;
+                    ThirdPerson = true;
+                    CreateScreenRenderTexture();
+                }
+            }
         }
 
         protected IEnumerator GetMainCamera()
@@ -487,16 +503,17 @@ namespace CameraPlus
             bool holdingLeftClick = Input.GetMouseButton(0);
             bool holdingRightClick = Input.GetMouseButton(1);
 
+            Vector3 mousePos = Input.mousePosition;
+
             // Close the context menu when we click anywhere within the bounds of the application
             if (!_mouseHeld && (holdingLeftClick || holdingRightClick))
             {
-                if (_menuStrip != null && Input.mousePosition.x > 0 && Input.mousePosition.x < Screen.width && Input.mousePosition.y > 0 && Input.mousePosition.y < Screen.height)
+                if (_menuStrip != null && mousePos.x > 0 && mousePos.x < Screen.width && mousePos.y > 0 && mousePos.y < Screen.height)
                 {
                     CloseContextMenu();
                 }
             }
 
-            Vector3 mousePos = Input.mousePosition;
             _isTopmostAtCursorPos = IsTopmostRenderAreaAtPos(mousePos);
             // Only evaluate mouse events for the topmost render target at the mouse position
             if (!_mouseHeld && !_isTopmostAtCursorPos) return;
@@ -588,10 +605,9 @@ namespace CameraPlus
                 Config.screenPosX = Mathf.Clamp(Config.screenPosX, 0, Screen.width - Config.screenWidth);
                 Config.screenPosY = Mathf.Clamp(Config.screenPosY, 0, Screen.height - Config.screenHeight);
                 
-                GL.Clear(false, true, Color.black, 0);
                 CreateScreenRenderTexture();
             }
-            else if (holdingRightClick)
+            else if (holdingRightClick && _contextMenuEnabled)
             {
                 if (_mouseHeld) return;
                 if (_menuStrip == null)
@@ -660,8 +676,6 @@ namespace CameraPlus
                         _isCameraDestroyed = true;
                         CreateScreenRenderTexture();
                         CloseContextMenu();
-                        GL.Clear(false, true, Color.black, 0);
-                        Destroy(this.gameObject);
                         Plugin.Log("Camera removed!");
                     }
                     else MessageBox.Show("Cannot remove main camera!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -726,7 +740,7 @@ namespace CameraPlus
             _layoutMenu.DropDownItems.Add(new ToolStripLabel("FOV"));
             var _fov = new ToolStripNumberControl();
             _controlTracker.Add(_fov);
-            _fov.Maximum = Screen.width;
+            _fov.Maximum = 179;
             _fov.Minimum = 0;
             _fov.Value = (decimal)Config.fov;
 
@@ -847,6 +861,8 @@ namespace CameraPlus
             // Add menu
             var _addMenu = new ToolStripMenuItem("Add");
             _controlTracker.Add(_addMenu);
+
+            // Add camera movement script
             ToolStripItem _addCameraMovement = _addMenu.DropDownItems.Add("Camera Movement", null, (p1, p2) =>
             {
                 OpenFileDialog ofd = new OpenFileDialog();
@@ -865,35 +881,51 @@ namespace CameraPlus
                     if (File.Exists(file))
                     {
                         Config.movementScriptPath = file;
-                        if (Config.movementScriptPath != String.Empty)
-                        {
-                            if (_cameraMovement.Init(this))
-                            {
-                                Config.thirdPerson = true;
-                                ThirdPerson = true;
-                                CreateScreenRenderTexture();
-                            }
-                        }
                         Config.Save();
+                        AddMovementScript();
                     }
                 };
                 ofd.ShowDialog();
                 CloseContextMenu();
             });
-            _addCameraMovement.Enabled = Config.movementScriptPath == String.Empty;
-            _scriptsMenu.DropDownItems.Add(_addMenu);
+            _addCameraMovement.Enabled = !File.Exists(Config.movementScriptPath) || (Config.movementScriptPath == "SongMovementScript" || Config.movementScriptPath == String.Empty);
 
+            // Add song camera movement script
+            ToolStripItem _addSongMovement = _addMenu.DropDownItems.Add("Song Camera Movement", null, (p1, p2) =>
+            {
+                Config.movementScriptPath = "SongMovementScript";
+                Config.Save();
+                AddMovementScript();
+                CloseContextMenu();
+            });
+            _addSongMovement.Enabled = Config.movementScriptPath != "SongMovementScript";
+            _scriptsMenu.DropDownItems.Add(_addMenu);
+            
             // Remove menu
             var _removeMenu = new ToolStripMenuItem("Remove");
             _controlTracker.Add(_removeMenu);
+
+            // Remove camera movement script
             ToolStripItem _removeCameraMovement = _removeMenu.DropDownItems.Add("Camera Movement", null, (p1, p2) =>
             {
                 Config.movementScriptPath = String.Empty;
-                _cameraMovement.Shutdown();
+                if (_cameraMovement)
+                    _cameraMovement.Shutdown();
                 Config.Save();
                 CloseContextMenu();
             });
-            _removeCameraMovement.Enabled = Config.movementScriptPath != String.Empty;
+            _removeCameraMovement.Enabled = !_addCameraMovement.Enabled;
+
+            // Remove song camera movement script
+            ToolStripItem _removeSongMovement = _removeMenu.DropDownItems.Add("Song Camera Movement", null, (p1, p2) =>
+            {
+                Config.movementScriptPath = String.Empty;
+                if (_cameraMovement)
+                    _cameraMovement.Shutdown();
+                Config.Save();
+                CloseContextMenu();
+            });
+            _removeSongMovement.Enabled = !_addSongMovement.Enabled;
             _scriptsMenu.DropDownItems.Add(_removeMenu);
             _menuStrip.Items.Add(_scriptsMenu);
 

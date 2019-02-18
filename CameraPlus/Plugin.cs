@@ -19,7 +19,9 @@ namespace CameraPlus
         private bool _init;
         public static Plugin Instance { get; private set; }
         public string Name => "CameraPlus";
-        public string Version => "v3.0.6";
+        public string Version => "v3.1.0";
+
+        public Action<Scene, Scene> ActiveSceneChanged;
         
         public void OnApplicationStart()
         {
@@ -40,13 +42,9 @@ namespace CameraPlus
 
             try
             {
-                // Trigger our activeSceneChanged event for each camera, because subscribing to the events from within the CameraPlusBehaviour component yields inconsistent results.
-                foreach (CameraPlusInstance c in Cameras.Values)
-                {
-                    c.Instance.SceneManager_activeSceneChanged(from, to);
-                }
+                ActiveSceneChanged?.Invoke(from, to);
             }
-            catch (Exception) { }
+            catch (Exception ex) { Log($"Exception while invoking ActiveSceneChanged! {ex}"); }
         }
 
         public void OnApplicationQuit()

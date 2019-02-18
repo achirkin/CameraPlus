@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using UnityEngine;
 
 namespace CameraPlus
 {
@@ -86,6 +87,8 @@ namespace CameraPlus
                             File.Delete(removedEntry.Config.FilePath);
                     }
 
+                    GL.Clear(false, true, Color.black, 0);
+                    GameObject.Destroy(removedEntry.Instance.gameObject);
                     return true;
                 }
             }
