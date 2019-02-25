@@ -317,10 +317,13 @@ namespace CameraPlus
             _moverPointer = pointer.gameObject.AddComponent<CameraMoverPointer>();
             _moverPointer.Init(this, _cameraCube);
         }
-        
+
+        [DllImport("user32.dll")]
+        static extern System.IntPtr GetActiveWindow();
+
         protected void OnApplicationFocus(bool hasFocus)
         {
-            if(!hasFocus)
+            if(!hasFocus && GetActiveWindow() == IntPtr.Zero)
                 CloseContextMenu();
         }
 
