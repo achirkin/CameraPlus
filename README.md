@@ -40,6 +40,9 @@ Edit that file to configure CameraPlus:
 | **angx**                  | X rotation of third person camera                                                            |
 | **angy**                  | Y rotation of third person camera                                                            |
 | **angz**                  | Z rotation of third person camera                                                            |
+| **firstPersonPosOffsetX** | X position offset of first person camera                                                     |
+| **firstPersonPosOffsetY** | Y position offset of first person camera                                                     |
+| **firstPersonPosOffsetZ** | Z position offset of first person camera                                                     |
 | **screenWidth**           | Width of the camera render area                                                              |
 | **screenHeight**          | Height of the camera render area                                                             |
 | **screenPosX**            | X position of the camera in the Beat Saber window                                            |
