@@ -332,7 +332,7 @@ namespace CameraPlus
                 CloseContextMenu();
         }
 
-        protected virtual void FixedUpdate()
+        protected virtual void Update()
         {
             // Only toggle the main camera in/out of third person with f1, not any extra cams
             if (_isMainCamera)

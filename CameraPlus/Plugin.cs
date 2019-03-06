@@ -19,7 +19,7 @@ namespace CameraPlus
         private bool _init;
         public static Plugin Instance { get; private set; }
         public string Name => "CameraPlus";
-        public string Version => "v3.1.0";
+        public string Version => "v3.2.0";
 
         public Action<Scene, Scene> ActiveSceneChanged;
         
