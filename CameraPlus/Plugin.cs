@@ -19,7 +19,7 @@ namespace CameraPlus
         private bool _init;
         public static Plugin Instance { get; private set; }
         public string Name => "CameraPlus";
-        public string Version => "v3.2.0";
+        public string Version => "v3.2.3";
 
         public Action<Scene, Scene> ActiveSceneChanged;
         
@@ -28,7 +28,7 @@ namespace CameraPlus
             if (_init) return;
             _init = true;
             Instance = this;
-
+            
             // Add our default cameraplus camera
             CameraUtilities.AddNewCamera("cameraplus");
 
@@ -37,14 +37,25 @@ namespace CameraPlus
 
         public void SceneManager_activeSceneChanged(Scene from, Scene to)
         {
+            SharedCoroutineStarter.instance.StartCoroutine(DelayedActiveSceneChanged(from, to));
+        }
+
+        IEnumerator DelayedActiveSceneChanged(Scene from, Scene to)
+        {
+            yield return new WaitForSeconds(0.5f);
+
             // If any new cameras have been added to the config folder, render them
             CameraUtilities.ReloadCameras();
 
-            try
+            // Invoke each activeSceneChanged event
+            foreach (var func in ActiveSceneChanged?.GetInvocationList())
             {
-                ActiveSceneChanged?.Invoke(from, to);
+                try
+                {
+                    func?.DynamicInvoke(from, to);
+                }
+                catch (Exception ex) { Log($"Exception while invoking ActiveSceneChanged! {ex}"); }
             }
-            catch (Exception ex) { Log($"Exception while invoking ActiveSceneChanged! {ex}"); }
         }
 
         public void OnApplicationQuit()

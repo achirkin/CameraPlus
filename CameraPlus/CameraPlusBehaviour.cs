@@ -118,6 +118,8 @@ namespace CameraPlus
         protected IEnumerator DelayedInit()
         {
             yield return _waitForMainCamera;
+
+
             _mainCamera = Camera.main;
             _menuStrip = null;
             XRSettings.showDeviceView = false;
@@ -201,7 +203,7 @@ namespace CameraPlus
             FirstPersonOffset = Config.FirstPersonPositionOffset;
 
             SceneManager_activeSceneChanged(new Scene(), new Scene());
-            Plugin.Log($"Camera \"{Path.GetFileName(Config.FilePath)} successfully initialized!\"");
+            Plugin.Log($"Camera \"{Path.GetFileName(Config.FilePath)}\" successfully initialized!\"");
         }
         
         protected virtual void OnDestroy()
@@ -316,7 +318,14 @@ namespace CameraPlus
         public virtual void SceneManager_activeSceneChanged(Scene from, Scene to)
         {
             StartCoroutine(GetMainCamera());
-            var pointer = to.name == "GameCore" ? Resources.FindObjectsOfTypeAll<VRPointer>().Last() : Resources.FindObjectsOfTypeAll<VRPointer>().First();
+            var vrPointers = to.name == "GameCore" ? Resources.FindObjectsOfTypeAll<VRPointer>() : Resources.FindObjectsOfTypeAll<VRPointer>();
+            if(vrPointers.Count() == 0)
+            {
+                Plugin.Log("Failed to get VRPointer!");
+                return;
+            }
+
+            var pointer = vrPointers[0];
             if (pointer == null) return;
             if (_moverPointer) Destroy(_moverPointer);
             _moverPointer = pointer.gameObject.AddComponent<CameraMoverPointer>();
@@ -937,16 +946,16 @@ namespace CameraPlus
             _scriptsMenu.DropDownItems.Add(_removeMenu);
             _menuStrip.Items.Add(_scriptsMenu);
 
-            //// Extras submenu
-            //var _extrasMenu = new ToolStripMenuItem("Extras");
-            //_controlTracker.Add(_extrasMenu);
-            //// Just the right number...
-            //_extrasMenu.DropDownItems.Add("Spawn 38 Cameras", null, (p1, p2) =>
-            //{
-            //    StartCoroutine(CameraUtilities.Spawn38Cameras());
-            //    CloseContextMenu();
-            //});
-            //_menuStrip.Items.Add(_extrasMenu);
+            // Extras submenu
+            var _extrasMenu = new ToolStripMenuItem("Extras");
+            _controlTracker.Add(_extrasMenu);
+            // Just the right number...
+            _extrasMenu.DropDownItems.Add("Spawn 38 Cameras", null, (p1, p2) =>
+            {
+                StartCoroutine(CameraUtilities.Spawn38Cameras());
+                CloseContextMenu();
+            });
+            _menuStrip.Items.Add(_extrasMenu);
         }
     }
 }

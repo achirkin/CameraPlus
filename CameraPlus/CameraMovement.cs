@@ -27,16 +27,25 @@ namespace CameraPlus
         {
             if (to.name == "GameCore")
             {
-                var standardLevelSceneSetupDataSO = Resources.FindObjectsOfTypeAll<StandardLevelSceneSetupDataSO>().FirstOrDefault();
-                if(standardLevelSceneSetupDataSO)
-                {
-                    var level = standardLevelSceneSetupDataSO.difficultyBeatmap.level;
-                    if (level is SongLoaderPlugin.OverrideClasses.CustomLevel)
-                    {
-                        if(LoadCameraData(Path.Combine((level as SongLoaderPlugin.OverrideClasses.CustomLevel).customSongInfo.path, "CameraMovementData.json")))
-                            data.ActiveInPauseMenu = false;
-                    }
-                }
+                //var standardLevelSceneSetupDataSO = Resources.FindObjectsOfTypeAll<StandardLevelScenesTransitionSetupDataSO>().FirstOrDefault();
+                //if(standardLevelSceneSetupDataSO)
+                //{
+                //    foreach(var pair in standardLevelSceneSetupDataSO.sceneInfoSceneSetupDataPairs)
+                //    {
+                //        if(pair.data is GameplayCoreSceneSetupData)
+                //        {
+                //            var sceneSetupData = (GameplayCoreSceneSetupData)pair.data;
+
+                //            var level = sceneSetupData.difficultyBeatmap.level;
+                //            Plugin.Log($"Level: {level.levelID}");
+                //            if (level is SongLoaderPlugin.OverrideClasses.CustomLevel)
+                //            {
+                //                if (LoadCameraData(Path.Combine((level as SongLoaderPlugin.OverrideClasses.CustomLevel).customSongInfo.path, "CameraMovementData.json")))
+                //                    data.ActiveInPauseMenu = false;
+                //            }
+                //        }
+                //    }
+                //}
             }
             else if(dataLoaded)
             {
@@ -85,7 +94,7 @@ namespace CameraPlus
         {
             public bool ActiveInPauseMenu = true;
             public List<Movements> Movements = new List<Movements>();
-
+            
             public bool LoadFromJson(string jsonString)
             {
                 Movements.Clear();
