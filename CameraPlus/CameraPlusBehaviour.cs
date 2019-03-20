@@ -325,8 +325,7 @@ namespace CameraPlus
                 return;
             }
 
-            var pointer = vrPointers[0];
-            if (pointer == null) return;
+            var pointer = to.name != "GameCore" ? vrPointers.First() : vrPointers.Last();
             if (_moverPointer) Destroy(_moverPointer);
             _moverPointer = pointer.gameObject.AddComponent<CameraMoverPointer>();
             _moverPointer.Init(this, _cameraCube);

@@ -4,7 +4,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
+using Harmony;
 using IllusionPlugin;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -19,15 +21,27 @@ namespace CameraPlus
         private bool _init;
         public static Plugin Instance { get; private set; }
         public string Name => "CameraPlus";
-        public string Version => "v3.2.3";
+        public string Version => "v3.2.4";
 
         public Action<Scene, Scene> ActiveSceneChanged;
+
+        private HarmonyInstance _harmony;
         
         public void OnApplicationStart()
         {
             if (_init) return;
             _init = true;
             Instance = this;
+
+            _harmony = HarmonyInstance.Create("com.brian91292.beatsaber.cameraplus");
+            try
+            {
+                _harmony.PatchAll(Assembly.GetExecutingAssembly());
+            }
+            catch (Exception ex)
+            {
+                Plugin.Log("Failed to apply harmony patches!");
+            }
             
             // Add our default cameraplus camera
             CameraUtilities.AddNewCamera("cameraplus");
@@ -61,6 +75,8 @@ namespace CameraPlus
         public void OnApplicationQuit()
         {
             SceneManager.activeSceneChanged -= SceneManager_activeSceneChanged;
+
+            _harmony.UnpatchAll("com.brian91292.beatsaber.cameraplus");
         }
 
         public void OnLevelWasLoaded(int level)
