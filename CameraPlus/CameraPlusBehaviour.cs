@@ -25,7 +25,7 @@ namespace CameraPlus
             DiagonalLeft,
             DiagonalRight
         }
-
+        
         protected readonly WaitUntil _waitForMainCamera = new WaitUntil(() => Camera.main);
         private readonly WaitForSecondsRealtime _waitForSecondsRealtime = new WaitForSecondsRealtime(1f);
         protected const int OnlyInThirdPerson = 3;
@@ -140,7 +140,7 @@ namespace CameraPlus
             _cam.stereoTargetEye = StereoTargetEyeMask.None;
             _cam.enabled = true;
             _cam.name = Path.GetFileName(Config.FilePath);
-            
+
             var _liv = _cam.GetComponent<LIV.SDK.Unity.LIV>();
             if (_liv)
                 Destroy(_liv);
@@ -196,6 +196,8 @@ namespace CameraPlus
             if (Config.movementScriptPath != String.Empty)
                 AddMovementScript();
 
+            SetCullingMask();
+
             CameraMovement.CreateExampleScript();
 
             Plugin.Instance.ActiveSceneChanged += SceneManager_activeSceneChanged;
@@ -247,7 +249,8 @@ namespace CameraPlus
                 ThirdPersonRot = Config.Rotation;
                 FirstPersonOffset = Config.FirstPersonPositionOffset;
             }
-            
+
+            SetCullingMask();
             CreateScreenRenderTexture();
             SetFOV();
         }
@@ -426,6 +429,14 @@ namespace CameraPlus
         {
             if (_cam == null) return;
             _cam.fieldOfView = Config.fov;
+        }
+
+        protected virtual void SetCullingMask()
+        {
+            if(Config.transparentWalls)
+                _cam.cullingMask &= ~(1 << TransparentWallsPatch.WallLayerMask);
+            else
+                _cam.cullingMask |= (1 << TransparentWallsPatch.WallLayerMask);
         }
 
         public bool IsWithinRenderArea(Vector2 mousePos, Config c)
@@ -739,7 +750,18 @@ namespace CameraPlus
                 });
             }
             _menuStrip.Items.Add(new ToolStripSeparator());
-            
+
+            // Toggle transparent walls
+            _menuStrip.Items.Add(Config.transparentWalls ? "Solid Walls" : "Transparent Walls", null, (p1, p2) =>
+            {
+                Config.transparentWalls = !Config.transparentWalls;
+                SetCullingMask();
+                CloseContextMenu();
+                Config.Save();
+            });
+
+            _menuStrip.Items.Add(new ToolStripSeparator());
+
             var _layoutMenu = new ToolStripMenuItem("Layout");
             _controlTracker.Add(_layoutMenu);
 

@@ -36,6 +36,7 @@ namespace CameraPlus
         public int layer = -1000;
 
         public bool fitToCanvas = false;
+        public bool transparentWalls = false;
 
         public string movementScriptPath = String.Empty;
         //public int maxFps = 90;
@@ -141,7 +142,6 @@ namespace CameraPlus
                 if (!text.Contains("fitToCanvas") && Path.GetFileName(FilePath) == "cameraplus.cfg")
                 {
                     fitToCanvas = true;
-                    Save();
                 }
                 if (text.Contains("rotx"))
                 {
@@ -152,14 +152,9 @@ namespace CameraPlus
                     angx = euler.x;
                     angy = euler.y;
                     angz = euler.z;
-
-                    Save();
                 }
             }
-            else
-            {
-                Save();
-            }
+            Save();
 
             _configWatcher = new FileSystemWatcher(Path.GetDirectoryName(FilePath))
             {

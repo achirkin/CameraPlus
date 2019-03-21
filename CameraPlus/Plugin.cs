@@ -21,7 +21,7 @@ namespace CameraPlus
         private bool _init;
         public static Plugin Instance { get; private set; }
         public string Name => "CameraPlus";
-        public string Version => "v3.2.5";
+        public string Version => "v3.2.6";
 
         public Action<Scene, Scene> ActiveSceneChanged;
 
@@ -40,7 +40,7 @@ namespace CameraPlus
             }
             catch (Exception ex)
             {
-                Plugin.Log("Failed to apply harmony patches!");
+                Plugin.Log($"Failed to apply harmony patches! {ex}");
             }
             
             // Add our default cameraplus camera
