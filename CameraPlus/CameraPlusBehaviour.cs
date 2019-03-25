@@ -796,6 +796,8 @@ namespace CameraPlus
                         droneCam = gameObject.AddComponent<DroneCam.DroneCam>();
                         droneCam.SetupCam(Path.GetFileName(Config.FilePath));
                     }
+                        Config.droneCam = false;
+                    Config.Save();
                 });
             }
             _menuStrip.Items.Add(new ToolStripSeparator());
