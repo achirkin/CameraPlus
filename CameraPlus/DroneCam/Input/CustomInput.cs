@@ -11,5 +11,6 @@ namespace CameraPlus.DroneCam.Input
         public DroneCam droneCam = null;
 
         public abstract void Setup(InputConfig config);
+        public abstract void CleanUp();
     }
 }

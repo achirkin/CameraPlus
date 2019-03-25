@@ -56,6 +56,14 @@ namespace CameraPlus.DroneCam
         {
            
         }
+
+        public void CleanUp()
+        {
+            Destroy(droneMovement);
+            Destroy(smoothingTarget.gameObject);
+            customInput.CleanUp();
+            Destroy(customInput);
+        }
     }
 }
 

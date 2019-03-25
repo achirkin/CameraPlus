@@ -362,20 +362,19 @@ namespace CameraPlus
             // Only toggle the main camera in/out of third person with f1, not any extra cams
             if (_isMainCamera)
             {
-                //if (Input.GetKeyDown(KeyCode.F1)) {
-                //    ThirdPerson = !ThirdPerson;
-                //    if (ThirdPerson) {
-                //        transform.position = _mainCamera.transform.position;
-                //        transform.rotation = _mainCamera.transform.rotation;
-                //        FirstPersonOffset = Config.FirstPersonPositionOffset;
-                //    } else if (droneCam == null) {
-                //        ThirdPersonPos = Config.Position;
-                //        ThirdPersonRot = Config.Rotation;
-                //    }
+                if (Input.GetKeyDown(KeyCode.F1))
+                {
+                    ThirdPerson = !ThirdPerson;
+                    if (ThirdPerson)
+                    {
+                        transform.position = _mainCamera.transform.position;
+                        transform.rotation = _mainCamera.transform.rotation;
+                        FirstPersonOffset = Config.FirstPersonPositionOffset;
+                    }
 
-                //    Config.thirdPerson = ThirdPerson;
-                //    Config.Save();
-                //}
+                    Config.thirdPerson = ThirdPerson;
+                    Config.Save();
+                }
             }
 
             if (droneCam != null)
@@ -759,10 +758,7 @@ namespace CameraPlus
                 CloseContextMenu();
                 Config.Save();
             });
-            _menuStrip.Items.Add("DroneCam", null, (p1, p2) =>
-            {
 
-            });
             if (Config.thirdPerson)
             {
                 // Hides/unhides the third person camera that appears when a camera is in third person mode
@@ -785,6 +781,21 @@ namespace CameraPlus
                     FirstPersonOffset = Config.FirstPersonPositionOffset;
                     Config.Save();
                     CloseContextMenu();
+                });
+
+                _menuStrip.Items.Add(Config.droneCam ? "Disable DroneCam" : "Ënable Drone Cam", null, (p1, p2) =>
+                {
+                    if (Config.droneCam && droneCam != null)
+                    {
+                        Config.droneCam = false;
+                        droneCam.CleanUp();
+                        Destroy(droneCam);
+                    } else
+                    {
+                        Config.droneCam = true;
+                        droneCam = gameObject.AddComponent<DroneCam.DroneCam>();
+                        droneCam.SetupCam(Path.GetFileName(Config.FilePath));
+                    }
                 });
             }
             _menuStrip.Items.Add(new ToolStripSeparator());

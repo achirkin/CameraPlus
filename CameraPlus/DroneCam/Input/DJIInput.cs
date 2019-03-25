@@ -141,6 +141,11 @@ namespace CameraPlus.DroneCam.Input
             }
         }
 
+        public override void CleanUp()
+        {
+            serialPort.Close();
+        }
+
         float DeadzoneAdjust(float input)
         {
             if (Mathf.Abs(input) < deadZone)

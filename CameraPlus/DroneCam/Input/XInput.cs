@@ -66,5 +66,9 @@ namespace CameraPlus.DroneCam.Input
             droneMovement.Move(movementProfile, new Vector3(padState.ThumbSticks.Left.X, padState.Triggers.Right - padState.Triggers.Left, padState.ThumbSticks.Left.Y),
                         new Vector3(-padState.ThumbSticks.Right.Y / 2, padState.ThumbSticks.Right.X / 2, 0));
         }
+
+        public override void CleanUp() {
+            Plugin.Log($"Goodbye player {(int)player + 1}!");
+        }
     }
 }
