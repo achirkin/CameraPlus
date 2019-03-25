@@ -14,6 +14,7 @@ namespace CameraPlus
         public float rotationSmooth = 5;
 
         public bool thirdPerson = false;
+        public bool droneCam = false;
         public bool showThirdPersonCamera = true;
 
         public float posx;

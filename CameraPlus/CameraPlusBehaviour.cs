@@ -25,7 +25,7 @@ namespace CameraPlus
             DiagonalLeft,
             DiagonalRight
         }
-        
+
         protected readonly WaitUntil _waitForMainCamera = new WaitUntil(() => Camera.main);
         private readonly WaitForSecondsRealtime _waitForSecondsRealtime = new WaitForSecondsRealtime(1f);
         protected const int OnlyInThirdPerson = 3;
@@ -54,6 +54,7 @@ namespace CameraPlus
         }
 
         protected bool _thirdPerson;
+        public DroneCam.DroneCam droneCam;
         public Vector3 ThirdPersonPos;
         public Vector3 ThirdPersonRot;
         public Vector3 FirstPersonOffset;
@@ -97,12 +98,12 @@ namespace CameraPlus
         protected bool _isBottom = false, _isLeft = false;
         protected ContextMenuStrip _menuStrip = new ContextMenuStrip();
         protected List<ToolStripItem> _controlTracker = new List<ToolStripItem>();
-        
+
         public static CursorType currentCursor = CursorType.None;
         public static bool wasWithinBorder = false;
         public static bool anyInstanceBusy = false;
         private static bool _contextMenuEnabled = true;
-        
+
         public virtual void Init(Config config)
         {
             DontDestroyOnLoad(gameObject);
@@ -114,7 +115,7 @@ namespace CameraPlus
 
             StartCoroutine(DelayedInit());
         }
-     
+
         protected IEnumerator DelayedInit()
         {
             yield return _waitForMainCamera;
@@ -127,7 +128,7 @@ namespace CameraPlus
             Config.ConfigChangedEvent += PluginOnConfigChangedEvent;
 
             var gameObj = Instantiate(_mainCamera.gameObject);
-            
+
             gameObj.SetActive(false);
             gameObj.name = "Camera Plus";
             gameObj.tag = "Untagged";
@@ -135,7 +136,7 @@ namespace CameraPlus
             DestroyImmediate(gameObj.GetComponent("CameraRenderCallbacksManager"));
             DestroyImmediate(gameObj.GetComponent("AudioListener"));
             DestroyImmediate(gameObj.GetComponent("MeshCollider"));
-            
+
             _cam = gameObj.GetComponent<Camera>();
             _cam.stereoTargetEye = StereoTargetEyeMask.None;
             _cam.enabled = true;
@@ -177,7 +178,7 @@ namespace CameraPlus
             _quad.transform.localEulerAngles = new Vector3(0, 180, 0);
             _quad.transform.localScale = new Vector3(_cam.aspect, 1, 1);
             _cameraPreviewQuad = _quad;
-            
+
             ReadConfig();
 
             if (ThirdPerson)
@@ -190,6 +191,19 @@ namespace CameraPlus
 
                 _cameraCube.position = ThirdPersonPos;
                 _cameraCube.eulerAngles = ThirdPersonRot;
+
+                if (Config.droneCam && droneCam == null)
+                {
+                    try
+                    {
+                        droneCam = gameObject.AddComponent<DroneCam.DroneCam>();
+                        droneCam.SetupCam(Path.GetFileName(Config.FilePath));
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("CamPlusDroneErr:\n{0} {1} {2}", e.GetType().ToString(), e.Message, e.StackTrace);
+                    }
+                }
             }
 
             // Add our camera movement script if the movement script path is set
@@ -207,7 +221,7 @@ namespace CameraPlus
             SceneManager_activeSceneChanged(new Scene(), new Scene());
             Plugin.Log($"Camera \"{Path.GetFileName(Config.FilePath)}\" successfully initialized!\"");
         }
-        
+
         protected virtual void OnDestroy()
         {
             Config.ConfigChangedEvent -= PluginOnConfigChangedEvent;
@@ -243,7 +257,7 @@ namespace CameraPlus
                 transform.rotation = _mainCamera.transform.rotation;
 
             }
-            else
+            else if (!Config.droneCam)
             {
                 ThirdPersonPos = Config.Position;
                 ThirdPersonRot = Config.Rotation;
@@ -285,7 +299,7 @@ namespace CameraPlus
                     return;
                 }
 
-                if(Config.fitToCanvas)
+                if (Config.fitToCanvas)
                 {
                     Config.screenPosX = 0;
                     Config.screenPosY = 0;
@@ -317,12 +331,12 @@ namespace CameraPlus
                 _prevScreenPosY = Config.screenPosY;
             });
         }
-        
+
         public virtual void SceneManager_activeSceneChanged(Scene from, Scene to)
         {
             StartCoroutine(GetMainCamera());
             var vrPointers = to.name == "GameCore" ? Resources.FindObjectsOfTypeAll<VRPointer>() : Resources.FindObjectsOfTypeAll<VRPointer>();
-            if(vrPointers.Count() == 0)
+            if (vrPointers.Count() == 0)
             {
                 Plugin.Log("Failed to get VRPointer!");
                 return;
@@ -339,7 +353,7 @@ namespace CameraPlus
 
         protected void OnApplicationFocus(bool hasFocus)
         {
-            if(!hasFocus && GetActiveWindow() == IntPtr.Zero)
+            if (!hasFocus && GetActiveWindow() == IntPtr.Zero)
                 CloseContextMenu();
         }
 
@@ -351,21 +365,25 @@ namespace CameraPlus
                 if (Input.GetKeyDown(KeyCode.F1))
                 {
                     ThirdPerson = !ThirdPerson;
-                    if (!ThirdPerson)
+                    if (ThirdPerson)
                     {
                         transform.position = _mainCamera.transform.position;
                         transform.rotation = _mainCamera.transform.rotation;
                         FirstPersonOffset = Config.FirstPersonPositionOffset;
                     }
-                    else
-                    {
-                        ThirdPersonPos = Config.Position;
-                        ThirdPersonRot = Config.Rotation;
-                    }
 
                     Config.thirdPerson = ThirdPerson;
                     Config.Save();
                 }
+            }
+
+            if (droneCam != null)
+            {
+                droneCam.Update();
+            }
+            else
+            {
+
             }
             HandleMouseEvents();
         }
@@ -376,7 +394,15 @@ namespace CameraPlus
             {
                 var camera = _mainCamera.transform;
 
-                if (ThirdPerson)
+                if (Config.droneCam && ThirdPerson)
+                {
+                    transform.position = Vector3.Lerp(transform.position, droneCam.smoothingTarget.position,
+                        Config.positionSmooth * Time.unscaledDeltaTime);
+
+                    transform.rotation = Quaternion.Slerp(transform.rotation, droneCam.smoothingTarget.rotation,
+                        Config.rotationSmooth * Time.unscaledDeltaTime);
+                }
+                else if (!Config.droneCam && ThirdPerson)
                 {
                     transform.position = ThirdPersonPos;
                     transform.eulerAngles = ThirdPersonRot;
@@ -384,12 +410,14 @@ namespace CameraPlus
                     _cameraCube.eulerAngles = ThirdPersonRot;
                     return;
                 }
+                else
+                {
+                    transform.position = Vector3.Lerp(transform.position, camera.position + FirstPersonOffset,
+                        Config.positionSmooth * Time.unscaledDeltaTime);
 
-                transform.position = Vector3.Lerp(transform.position, camera.position + FirstPersonOffset,
-                    Config.positionSmooth * Time.unscaledDeltaTime);
-
-                transform.rotation = Quaternion.Slerp(transform.rotation, camera.rotation,
-                    Config.rotationSmooth * Time.unscaledDeltaTime);
+                    transform.rotation = Quaternion.Slerp(transform.rotation, camera.rotation,
+                        Config.rotationSmooth * Time.unscaledDeltaTime);
+                }
             }
             catch { }
         }
@@ -433,10 +461,15 @@ namespace CameraPlus
 
         protected virtual void SetCullingMask()
         {
-            if(Config.transparentWalls)
+            if (Config.transparentWalls)
                 _cam.cullingMask &= ~(1 << TransparentWallsPatch.WallLayerMask);
             else
                 _cam.cullingMask |= (1 << TransparentWallsPatch.WallLayerMask);
+        }
+
+        public void LookAt(Transform target)
+        {
+            transform.LookAt(target);
         }
 
         public bool IsWithinRenderArea(Vector2 mousePos, Config c)
@@ -460,13 +493,13 @@ namespace CameraPlus
                     return false;
                 }
 
-                if (c.Config.layer == Config.layer && 
+                if (c.Config.layer == Config.layer &&
                     c.Instance._lastRenderUpdate > _lastRenderUpdate)
                 {
                     return false;
                 }
 
-                if (c.Instance._mouseHeld && (c.Instance._isMoving || 
+                if (c.Instance._mouseHeld && (c.Instance._isMoving ||
                     c.Instance._isResizing || c.Instance._contextMenuOpen))
                 {
                     return false;
@@ -502,7 +535,7 @@ namespace CameraPlus
             }
             _contextMenuOpen = false;
         }
-        
+
         public static void SetCursor(CursorType type)
         {
             if (type != currentCursor)
@@ -523,7 +556,7 @@ namespace CameraPlus
                         texture = Utils.LoadTextureFromResources("CameraPlus.Resources.Resize_DiagLeft.png");
                         break;
                 }
-                UnityEngine.Cursor.SetCursor(texture, texture ? new Vector2(texture.width / 2, texture.height / 2) : new Vector2(0,0), CursorMode.Auto);
+                UnityEngine.Cursor.SetCursor(texture, texture ? new Vector2(texture.width / 2, texture.height / 2) : new Vector2(0, 0), CursorMode.Auto);
                 currentCursor = type;
             }
         }
@@ -596,7 +629,7 @@ namespace CameraPlus
                 {
                     _initialOffset.x = currentMouseOffsetX;
                     _initialOffset.y = currentMouseOffsetY;
-                    
+
                     _lastScreenPos = Config.ScreenPosition;
                     _lastGrabPos = new Vector2(mousePos.x, mousePos.y);
 
@@ -634,7 +667,7 @@ namespace CameraPlus
                 Config.screenHeight = Mathf.Clamp(Config.screenHeight, 100, Screen.height);
                 Config.screenPosX = Mathf.Clamp(Config.screenPosX, 0, Screen.width - Config.screenWidth);
                 Config.screenPosY = Mathf.Clamp(Config.screenPosY, 0, Screen.height - Config.screenHeight);
-                
+
                 CreateScreenRenderTexture();
             }
             else if (holdingRightClick && _contextMenuEnabled)
@@ -725,6 +758,7 @@ namespace CameraPlus
                 CloseContextMenu();
                 Config.Save();
             });
+
             if (Config.thirdPerson)
             {
                 // Hides/unhides the third person camera that appears when a camera is in third person mode
@@ -747,6 +781,23 @@ namespace CameraPlus
                     FirstPersonOffset = Config.FirstPersonPositionOffset;
                     Config.Save();
                     CloseContextMenu();
+                });
+
+                _menuStrip.Items.Add(Config.droneCam ? "Disable DroneCam" : "Ënable Drone Cam", null, (p1, p2) =>
+                {
+                    if (Config.droneCam && droneCam != null)
+                    {
+                        Config.droneCam = false;
+                        droneCam.CleanUp();
+                        Destroy(droneCam);
+                    } else
+                    {
+                        Config.droneCam = true;
+                        droneCam = gameObject.AddComponent<DroneCam.DroneCam>();
+                        droneCam.SetupCam(Path.GetFileName(Config.FilePath));
+                    }
+                        Config.droneCam = false;
+                    Config.Save();
                 });
             }
             _menuStrip.Items.Add(new ToolStripSeparator());
@@ -814,7 +865,7 @@ namespace CameraPlus
                 Config.Save();
             };
             _layoutMenu.DropDownItems.Add(_renderScale);
-            
+
 
             // Sets the size of the current cameras pixelrect
             _layoutMenu.DropDownItems.Add(new ToolStripLabel("Size"));
@@ -872,7 +923,7 @@ namespace CameraPlus
             };
             _layoutMenu.DropDownItems.Add(_yBox);
 
-            
+
             // Fit to canvas checkbox
             var _fitToCanvasBox = new ToolStripCheckBox("Fit to Canvas");
             _controlTracker.Add(_fitToCanvasBox);
@@ -914,7 +965,8 @@ namespace CameraPlus
                 CameraMovement.CreateExampleScript();
                 ofd.InitialDirectory = path;
                 ofd.Title = "Select a script";
-                ofd.FileOk += (sender, e) => {
+                ofd.FileOk += (sender, e) =>
+                {
                     string file = ((OpenFileDialog)sender).FileName;
                     if (File.Exists(file))
                     {
@@ -938,7 +990,7 @@ namespace CameraPlus
             });
             _addSongMovement.Enabled = Config.movementScriptPath != "SongMovementScript";
             _scriptsMenu.DropDownItems.Add(_addMenu);
-            
+
             // Remove menu
             var _removeMenu = new ToolStripMenuItem("Remove");
             _controlTracker.Add(_removeMenu);

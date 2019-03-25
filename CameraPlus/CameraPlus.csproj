@@ -86,12 +86,21 @@
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Beat Saber\Beat Saber_Data\Managed\UnityEngine.VRModule.dll</HintPath>
     </Reference>
     <Reference Include="WindowsBase" />
+    <Reference Include="XInputDotNetPure">
+      <HintPath>lib\XInputDotNetPure.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CameraMoverPointer.cs" />
     <Compile Include="CameraPlusInstance.cs" />
     <Compile Include="CameraUtilities.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="DroneCam\DroneMovement.cs" />
+    <Compile Include="DroneCam\Input\InputConfig.cs" />
+    <Compile Include="DroneCam\Input\XInput.cs" />
+    <Compile Include="DroneCam\Input\DJIInput.cs" />
+    <Compile Include="DroneCam\Input\CustomInput.cs" />
+    <Compile Include="DroneCam\DroneCam.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CameraPlusBehaviour.cs" />
@@ -129,6 +138,7 @@
     <PostBuildEvent>copy /Y "$(TargetDir)$(TargetFileName)" "C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Plugins"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>"$(ProjectDir)..\..\PluginVersionSetter.exe" "$(ProjectDir)Properties\AssemblyInfo.cs" "$(ProjectDir)Plugin.cs"</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
 </Project>
