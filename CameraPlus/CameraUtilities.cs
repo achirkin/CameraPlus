@@ -13,14 +13,14 @@ namespace CameraPlus
         {
             return Plugin.Instance.Cameras.Keys.Where(c => c == cameraName + ".cfg").Count() > 0;
         }
-
+        
         public static void AddNewCamera(string cameraName, Config CopyConfig = null, bool meme = false)
         {
             string path = Path.Combine(Environment.CurrentDirectory, "UserData", "CameraPlus", $"{cameraName}.cfg");
             if (!File.Exists(path))
             {
                 // Try to copy their old config file into the new camera location
-                if (cameraName == "cameraplus")
+                if(cameraName == "cameraplus")
                 {
                     string oldPath = Path.Combine(Environment.CurrentDirectory, "cameraplus.cfg");
                     if (File.Exists(oldPath))
@@ -69,7 +69,7 @@ namespace CameraPlus
                     config.screenHeight /= 4;
                     config.screenWidth /= 4;
                 }
-
+                
                 config.Position = config.DefaultPosition;
                 config.Rotation = config.DefaultRotation;
                 config.FirstPersonPositionOffset = config.DefaultFirstPersonPositionOffset;
