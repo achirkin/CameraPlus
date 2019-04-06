@@ -107,7 +107,6 @@
     </Compile>
     <Compile Include="TransparentWallsPatch.cs" />
     <Compile Include="Utilities.cs" />
-    <Compile Include="WindowOverridePatch.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
