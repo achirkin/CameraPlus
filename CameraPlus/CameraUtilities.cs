@@ -73,6 +73,7 @@ namespace CameraPlus
                 config.Position = config.DefaultPosition;
                 config.Rotation = config.DefaultRotation;
                 config.FirstPersonPositionOffset = config.DefaultFirstPersonPositionOffset;
+                config.FirstPersonRotationOffset = config.DefaultFirstPersonRotationOffset;
                 config.Save();
                 Plugin.Log($"Success creating new camera \"{cameraName}\"");
             }

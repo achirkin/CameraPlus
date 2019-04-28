@@ -57,6 +57,7 @@ namespace CameraPlus
         public Vector3 ThirdPersonPos;
         public Vector3 ThirdPersonRot;
         public Vector3 FirstPersonOffset;
+        public Vector3 FirstPersonRotationOffset;
         public Config Config;
 
         protected RenderTexture _camRenderTexture;
@@ -203,7 +204,7 @@ namespace CameraPlus
             Plugin.Instance.ActiveSceneChanged += SceneManager_activeSceneChanged;
 
             FirstPersonOffset = Config.FirstPersonPositionOffset;
-
+            FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
             SceneManager_activeSceneChanged(new Scene(), new Scene());
             Plugin.Log($"Camera \"{Path.GetFileName(Config.FilePath)}\" successfully initialized!\"");
         }
@@ -248,6 +249,7 @@ namespace CameraPlus
                 ThirdPersonPos = Config.Position;
                 ThirdPersonRot = Config.Rotation;
                 FirstPersonOffset = Config.FirstPersonPositionOffset;
+                FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
             }
 
             SetCullingMask();
@@ -356,6 +358,7 @@ namespace CameraPlus
                         transform.position = _mainCamera.transform.position;
                         transform.rotation = _mainCamera.transform.rotation;
                         FirstPersonOffset = Config.FirstPersonPositionOffset;
+                        FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
                     }
                     else
                     {
@@ -388,8 +391,17 @@ namespace CameraPlus
                 transform.position = Vector3.Lerp(transform.position, camera.position + FirstPersonOffset,
                     Config.positionSmooth * Time.unscaledDeltaTime);
 
-                transform.rotation = Quaternion.Slerp(transform.rotation, camera.rotation,
+             //   transform.eulerAngles = FirstPersonRotationOffset;
+             if(!Config.forceFirstPersonUpRight)
+                transform.rotation = Quaternion.Slerp(transform.rotation, camera.rotation * Quaternion.Euler(Config.FirstPersonRotationOffset),
                     Config.rotationSmooth * Time.unscaledDeltaTime);
+             else
+                {
+                    Quaternion rot = Quaternion.Slerp(transform.rotation, camera.rotation * Quaternion.Euler(Config.FirstPersonRotationOffset),
+                        Config.rotationSmooth * Time.unscaledDeltaTime);
+                    transform.rotation = rot * Quaternion.Euler(0, 0, -(rot.eulerAngles.z) );
+                }
+                    
             }
             catch { }
         }
@@ -721,6 +733,7 @@ namespace CameraPlus
                 ThirdPersonPos = Config.Position;
                 ThirdPersonRot = Config.Rotation;
                 FirstPersonOffset = Config.FirstPersonPositionOffset;
+                FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
                 CreateScreenRenderTexture();
                 CloseContextMenu();
                 Config.Save();
@@ -742,9 +755,11 @@ namespace CameraPlus
                     Config.Position = Config.DefaultPosition;
                     Config.Rotation = Config.DefaultRotation;
                     Config.FirstPersonPositionOffset = Config.DefaultFirstPersonPositionOffset;
+                    Config.FirstPersonRotationOffset = Config.DefaultFirstPersonRotationOffset;
                     ThirdPersonPos = Config.DefaultPosition;
                     ThirdPersonRot = Config.DefaultRotation;
                     FirstPersonOffset = Config.FirstPersonPositionOffset;
+                    FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
                     Config.Save();
                     CloseContextMenu();
                 });
@@ -758,6 +773,13 @@ namespace CameraPlus
                 SetCullingMask();
                 CloseContextMenu();
                 Config.Save();
+            });
+
+            _menuStrip.Items.Add(Config.forceFirstPersonUpRight ? "Don't Force Camera Upright" : "Force Camera Upright", null, (p1, p2) =>
+            {
+                Config.forceFirstPersonUpRight = !Config.forceFirstPersonUpRight;
+                Config.Save();
+                CloseContextMenu();
             });
 
             _menuStrip.Items.Add(new ToolStripSeparator());

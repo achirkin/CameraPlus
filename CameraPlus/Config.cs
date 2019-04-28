@@ -28,6 +28,10 @@ namespace CameraPlus
         public float firstPersonPosOffsetY;
         public float firstPersonPosOffsetZ;
 
+        public float firstPersonRotOffsetX;
+        public float firstPersonRotOffsetY;
+        public float firstPersonRotOffsetZ;
+
         public int screenWidth = Screen.width;
         public int screenHeight = Screen.height;
         public int screenPosX;
@@ -37,7 +41,7 @@ namespace CameraPlus
 
         public bool fitToCanvas = false;
         public bool transparentWalls = false;
-
+        public bool forceFirstPersonUpRight = false;
         public string movementScriptPath = String.Empty;
         //public int maxFps = 90;
 
@@ -119,8 +123,28 @@ namespace CameraPlus
                 firstPersonPosOffsetZ = value.z;
             }
         }
+        public Vector3 FirstPersonRotationOffset
+        {
+            get
+            {
+                return new Vector3(firstPersonRotOffsetX, firstPersonRotOffsetY, firstPersonRotOffsetZ);
+            }
+            set
+            {
+                firstPersonRotOffsetX = value.x;
+                firstPersonRotOffsetY = value.y;
+                firstPersonRotOffsetZ = value.z;
+            }
+        }
 
         public Vector3 DefaultFirstPersonPositionOffset
+        {
+            get
+            {
+                return new Vector3(0, 0, 0);
+            }
+        }
+        public Vector3 DefaultFirstPersonRotationOffset
         {
             get
             {
