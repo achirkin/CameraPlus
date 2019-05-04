@@ -1,12 +1,7 @@
-﻿using IllusionInjector;
-using IllusionPlugin;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using IPA.Loader;
 using UnityEngine;
 
 namespace CameraPlus
@@ -55,9 +50,9 @@ namespace CameraPlus
 
         public static bool IsModInstalled(string modName)
         {
-            foreach (IPlugin p in PluginManager.Plugins)
+            foreach (PluginLoader.PluginInfo p in PluginManager.AllPlugins)
             {
-                if (p.Name == modName)
+                if (p.Metadata.Name == modName)
                 {
                     return true;
                 }

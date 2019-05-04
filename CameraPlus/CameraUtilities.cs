@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.IO;
 using System.Linq;
+using System.Collections;
+using IPA.Utilities;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -16,20 +17,20 @@ namespace CameraPlus
         
         public static void AddNewCamera(string cameraName, Config CopyConfig = null, bool meme = false)
         {
-            string path = Path.Combine(Environment.CurrentDirectory, "UserData", "CameraPlus", $"{cameraName}.cfg");
+            string path = Path.Combine(BeatSaber.UserDataPath, Plugin.PluginName, $"{cameraName}.cfg");
             if (!File.Exists(path))
             {
                 // Try to copy their old config file into the new camera location
-                if(cameraName == "cameraplus")
+                if(cameraName == Plugin.MainCamera)
                 {
-                    string oldPath = Path.Combine(Environment.CurrentDirectory, "cameraplus.cfg");
+                    string oldPath = Path.Combine(Environment.CurrentDirectory, $"{Plugin.MainCamera}.cfg");
                     if (File.Exists(oldPath))
                     {
                         if (!Directory.Exists(Path.GetDirectoryName(path)))
                             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                         File.Move(oldPath, path);
-                        Plugin.Log("Copied old cameraplus.cfg into new CameraPlus folder in UserData");
+                        Logger.log.Info($"Copied old {Plugin.MainCamera}.cfg into new {Plugin.PluginName} folder in UserData");
                     }
                 }
 
@@ -46,7 +47,7 @@ namespace CameraPlus
                         config.layer++;
                 }
 
-                if (cameraName == "cameraplus")
+                if (cameraName == Plugin.MainCamera)
                     config.fitToCanvas = true;
 
                 if (meme)
@@ -64,7 +65,7 @@ namespace CameraPlus
                     config.angy = Random.Range(0, 360);
                     config.angz = Random.Range(0, 360);
                 }
-                else if (CopyConfig == null && cameraName != "cameraplus")
+                else if (CopyConfig == null && cameraName != Plugin.MainCamera)
                 {
                     config.screenHeight /= 4;
                     config.screenWidth /= 4;
@@ -75,11 +76,11 @@ namespace CameraPlus
                 config.FirstPersonPositionOffset = config.DefaultFirstPersonPositionOffset;
                 config.FirstPersonRotationOffset = config.DefaultFirstPersonRotationOffset;
                 config.Save();
-                Plugin.Log($"Success creating new camera \"{cameraName}\"");
+                Logger.log.Info($"Success creating new camera \"{cameraName}\"");
             }
             else
             {
-                Plugin.Log($"Camera \"{cameraName}\" already exists!");
+                Logger.log.Info($"Camera \"{cameraName}\" already exists!");
             }
         }
 
@@ -102,22 +103,34 @@ namespace CameraPlus
         {
             try
             {
-                if (Plugin.Instance.Cameras.TryRemove(Plugin.Instance.Cameras.Where(c => c.Value.Instance == instance && c.Key != "cameraplus.cfg")?.First().Key, out var removedEntry))
+                if (Path.GetFileName(instance.Config.FilePath) != $"{Plugin.MainCamera}.cfg")
                 {
-                    if (delete)
+                    if (Plugin.Instance.Cameras.TryRemove(Plugin.Instance.Cameras.Where(c => c.Value.Instance == instance && c.Key != $"{Plugin.MainCamera}.cfg")?.First().Key, out var removedEntry))
                     {
-                        if (File.Exists(removedEntry.Config.FilePath))
-                            File.Delete(removedEntry.Config.FilePath);
-                    }
+                        if (delete)
+                        {
+                            if (File.Exists(removedEntry.Config.FilePath))
+                                File.Delete(removedEntry.Config.FilePath);
+                        }
 
-                    GL.Clear(false, true, Color.black, 0);
-                    GameObject.Destroy(removedEntry.Instance.gameObject);
-                    return true;
+                        GL.Clear(false, true, Color.black, 0);
+                        GameObject.Destroy(removedEntry.Instance.gameObject);
+                        return true;
+                    }
+                }
+                else
+                {
+                    Logger.log.Warn("One does not simply remove the main camera!");
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Plugin.Log("Can't remove cam!");
+                string msg
+                    = ((instance != null && instance.Config != null && instance.Config.FilePath != null)
+                    ? $"Could not remove camera with configuration: '{Path.GetFileName(instance.Config.FilePath)}'."
+                    : $"Could not remove camera.");
+
+                Logger.log.Error($"{msg}\n{ex.Source} threw an exception: {ex.Message}\n{ex.StackTrace}");
             }
             return false;
         }
@@ -126,20 +139,20 @@ namespace CameraPlus
         {
             try
             {
-                string[] files = Directory.GetFiles(Path.Combine(Environment.CurrentDirectory, "UserData\\CameraPlus"));
+                string[] files = Directory.GetFiles(Path.Combine(BeatSaber.UserDataPath, Plugin.PluginName));
                 foreach (string filePath in files)
                 {
                     string fileName = Path.GetFileName(filePath);
                     if (fileName.EndsWith(".cfg") && !Plugin.Instance.Cameras.ContainsKey(fileName))
                     {
-                        Plugin.Log($"Found config {filePath}!");
+                        Logger.log.Info($"Found config {filePath}!");
                         Plugin.Instance.Cameras.TryAdd(fileName, new CameraPlusInstance(filePath));
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Plugin.Log($"Exception while reloading cameras! {e.ToString()}");
+                Logger.log.Error($"Exception while reloading cameras! {ex.Source}: {ex.Message}\n{ex.StackTrace}");
             }
         }
 

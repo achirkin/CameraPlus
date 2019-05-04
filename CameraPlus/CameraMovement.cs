@@ -1,12 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System;
 using System.IO;
-using System;
 using System.Linq;
+using System.Reflection;
+using System.Collections.Generic;
+using IPA.Utilities;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using CameraPlus.SimpleJSON;
-using System.Reflection;
 
 namespace CameraPlus
 {
@@ -14,16 +14,16 @@ namespace CameraPlus
     {
         public override bool Init(CameraPlusBehaviour cameraPlus)
         {
-            if (Utils.IsModInstalled("Song Loader Plugin"))
+            if (Utils.IsModInstalled("SongLoaderPlugin"))
             {
                 _cameraPlus = cameraPlus;
-                Plugin.Instance.ActiveSceneChanged += SceneManager_activeSceneChanged;
+                Plugin.Instance.ActiveSceneChanged += OnActiveSceneChanged;
                 return true;
             }
             return false;
         }
         
-        public override void SceneManager_activeSceneChanged(Scene from, Scene to)
+        public override void OnActiveSceneChanged(Scene from, Scene to)
         {
             if (to.name == "GameCore")
             {
@@ -53,12 +53,12 @@ namespace CameraPlus
                 _cameraPlus.ThirdPersonPos = _cameraPlus.Config.Position;
                 _cameraPlus.ThirdPersonRot = _cameraPlus.Config.Rotation;
             }
-            base.SceneManager_activeSceneChanged(from, to);
+            base.OnActiveSceneChanged(from, to);
         }
 
         public override void Shutdown()
         {
-            Plugin.Instance.ActiveSceneChanged -= SceneManager_activeSceneChanged;
+            Plugin.Instance.ActiveSceneChanged -= OnActiveSceneChanged;
             Destroy(this);
         }
     }
@@ -132,7 +132,7 @@ namespace CameraPlus
             }
         }
 
-        public virtual void SceneManager_activeSceneChanged(Scene from, Scene to)
+        public virtual void OnActiveSceneChanged(Scene from, Scene to)
         {
             if (to.name == "GameCore")
             {
@@ -168,13 +168,13 @@ namespace CameraPlus
         public virtual bool Init(CameraPlusBehaviour cameraPlus)
         {
             _cameraPlus = cameraPlus;
-            Plugin.Instance.ActiveSceneChanged += SceneManager_activeSceneChanged;
+            Plugin.Instance.ActiveSceneChanged += OnActiveSceneChanged;
             return LoadCameraData(cameraPlus.Config.movementScriptPath);
         }
 
         public virtual void Shutdown()
         {
-            Plugin.Instance.ActiveSceneChanged -= SceneManager_activeSceneChanged;
+            Plugin.Instance.ActiveSceneChanged -= OnActiveSceneChanged;
             Destroy(this);
         }
 
@@ -204,18 +204,18 @@ namespace CameraPlus
                 string jsonText = File.ReadAllText(path);
                 if (data.LoadFromJson(jsonText))
                 {
-                    Console.WriteLine("[CameraPlus] Populated CameraData");
+                    Logger.log.Info("Populated CameraData");
 
                     if (data.Movements.Count == 0)
                     {
-                        Console.WriteLine("[CameraPlus] No movement data!");
+                        Logger.log.Info("No movement data!");
                         return false;
                     }
                     eventID = 0;
                     UpdatePosAndRot();
                     dataLoaded = true;
 
-                    Console.WriteLine("[CameraPlus] Found " + data.Movements.Count + " entries in: " + path);
+                    Logger.log.Info($"Found {data.Movements.Count} entries in: {path}");
                     return true;
                 }
             }
@@ -271,7 +271,7 @@ namespace CameraPlus
 
         public static void CreateExampleScript()
         {
-            string path = Path.Combine(Environment.CurrentDirectory, "UserData", "CameraPlus", "Scripts");
+            string path = Path.Combine(BeatSaber.UserDataPath, Plugin.PluginName, "Scripts");
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
             string defaultScript = Path.Combine(path, "ExampleMovementScript.json");

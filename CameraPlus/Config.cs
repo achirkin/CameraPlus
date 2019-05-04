@@ -163,7 +163,7 @@ namespace CameraPlus
             {
                 Load();
                 var text = File.ReadAllText(FilePath);
-                if (!text.Contains("fitToCanvas") && Path.GetFileName(FilePath) == "cameraplus.cfg")
+                if (!text.Contains("fitToCanvas") && Path.GetFileName(FilePath) == $"{Plugin.MainCamera}.cfg")
                 {
                     fitToCanvas = true;
                 }

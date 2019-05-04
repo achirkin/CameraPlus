@@ -1,34 +1,32 @@
 ﻿using System;
+using System.Reflection;
 using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Windows.Forms;
+using IPA;
+using IPALogger = IPA.Logging.Logger;
 using Harmony;
-using IllusionPlugin;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace CameraPlus
 {
-    public class Plugin : IPlugin
+    public class Plugin : IBeatSaberPlugin
     {
-        public ConcurrentDictionary<string, CameraPlusInstance> Cameras = new ConcurrentDictionary<string, CameraPlusInstance>();
-        
         private bool _init;
-        public static Plugin Instance { get; private set; }
-        public string Name => "CameraPlus";
-        public string Version => "v3.3.0";
+        private HarmonyInstance _harmony;
 
         public Action<Scene, Scene> ActiveSceneChanged;
+        public ConcurrentDictionary<string, CameraPlusInstance> Cameras = new ConcurrentDictionary<string, CameraPlusInstance>();
 
-        private HarmonyInstance _harmony;
+        public static Plugin Instance { get; private set; }
+        public static string PluginName => "CameraPlus";
+        public static string MainCamera => Plugin.PluginName.ToLower();
         
         public void OnApplicationStart()
         {
+            Logger.log.Debug("OnApplicationStart");
+
             if (_init) return;
             _init = true;
             Instance = this;
@@ -40,16 +38,16 @@ namespace CameraPlus
             }
             catch (Exception ex)
             {
-                Plugin.Log($"Failed to apply harmony patches! {ex}");
+                Logger.log.Error($"Failed to apply harmony patches! {ex}");
             }
             
             // Add our default cameraplus camera
-            CameraUtilities.AddNewCamera("cameraplus");
+            CameraUtilities.AddNewCamera(Plugin.MainCamera);
 
-            SceneManager.activeSceneChanged += SceneManager_activeSceneChanged;
+            SceneManager.activeSceneChanged += OnActiveSceneChanged;
         }
 
-        public void SceneManager_activeSceneChanged(Scene from, Scene to)
+        public void OnActiveSceneChanged(Scene from, Scene to)
         {
             SharedCoroutineStarter.instance.StartCoroutine(DelayedActiveSceneChanged(from, to));
         }
@@ -61,29 +59,42 @@ namespace CameraPlus
             // If any new cameras have been added to the config folder, render them
             CameraUtilities.ReloadCameras();
 
-            // Invoke each activeSceneChanged event
-            foreach (var func in ActiveSceneChanged?.GetInvocationList())
+            try
             {
-                try
+                if (ActiveSceneChanged != null)
                 {
-                    func?.DynamicInvoke(from, to);
+                    // Invoke each activeSceneChanged event
+                    foreach (var func in ActiveSceneChanged?.GetInvocationList())
+                    {
+                        try
+                        {
+                            func?.DynamicInvoke(from, to);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.log.Error($"Exception while invoking ActiveSceneChanged! {ex}");
+                        }
+                    }
                 }
-                catch (Exception ex) { Log($"Exception while invoking ActiveSceneChanged! {ex}"); }
+            }
+            catch (Exception ex)
+            {
+                Logger.log.Warn($"'{ex.TargetSite}' threw an exception: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
         public void OnApplicationQuit()
         {
-            SceneManager.activeSceneChanged -= SceneManager_activeSceneChanged;
+            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
 
             _harmony.UnpatchAll("com.brian91292.beatsaber.cameraplus");
         }
 
-        public void OnLevelWasLoaded(int level)
+        public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
         {
         }
 
-        public void OnLevelWasInitialized(int level)
+        public void OnSceneUnloaded(Scene scene)
         {
         }
 
@@ -102,9 +113,10 @@ namespace CameraPlus
             }
         }
 
-        public static void Log(string msg)
+        public void Init(IPALogger logger)
         {
-            Console.WriteLine($"[{Plugin.Instance.Name}] {msg}");
+            Logger.log = logger;
+            Logger.log.Debug("Logger prepared");
         }
     }
 }
