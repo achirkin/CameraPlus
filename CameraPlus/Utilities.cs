@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
+using IPA.Old;
 using IPA.Loader;
 using UnityEngine;
 
@@ -50,13 +51,21 @@ namespace CameraPlus
 
         public static bool IsModInstalled(string modName)
         {
+            Logger.log.Debug($"Looking in BSIPA for {modName}.");
             foreach (PluginLoader.PluginInfo p in PluginManager.AllPlugins)
             {
-                if (p.Metadata.Name == modName)
-                {
+                if (p.Metadata.Name == modName || p.Metadata.Id == modName)
                     return true;
-                }
             }
+
+            Logger.log.Debug($"{modName} not found in BSIPA. Looking through the legacy list instead...");
+            foreach (IPlugin p in PluginManager.Plugins)
+            {
+                if (p.Name == modName)
+                    return true;
+            }
+
+            Logger.log.Debug($"{modName} was not found.");
             return false;
         }
     }
