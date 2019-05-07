@@ -25,8 +25,6 @@ namespace CameraPlus
         
         public void OnApplicationStart()
         {
-            Logger.log.Debug("OnApplicationStart");
-
             if (_init) return;
             _init = true;
             Instance = this;
@@ -44,49 +42,40 @@ namespace CameraPlus
             // Add our default cameraplus camera
             CameraUtilities.AddNewCamera(Plugin.MainCamera);
 
-            SceneManager.activeSceneChanged += OnActiveSceneChanged;
+            Logger.log.Notice($"{Plugin.PluginName} has started");
         }
 
-        public void OnActiveSceneChanged(Scene from, Scene to)
+        public void OnActiveSceneChanged(Scene prevScene, Scene nextScene)
         {
-            SharedCoroutineStarter.instance.StartCoroutine(DelayedActiveSceneChanged(from, to));
+            SharedCoroutineStarter.instance.StartCoroutine(DelayedActiveSceneChanged(prevScene, nextScene));
         }
 
-        IEnumerator DelayedActiveSceneChanged(Scene from, Scene to)
+        IEnumerator DelayedActiveSceneChanged(Scene prevScene, Scene nextScene)
         {
             yield return new WaitForSeconds(0.5f);
 
             // If any new cameras have been added to the config folder, render them
             CameraUtilities.ReloadCameras();
 
-            try
+            if (ActiveSceneChanged != null)
             {
-                if (ActiveSceneChanged != null)
+                // Invoke each activeSceneChanged event
+                foreach (var func in ActiveSceneChanged?.GetInvocationList())
                 {
-                    // Invoke each activeSceneChanged event
-                    foreach (var func in ActiveSceneChanged?.GetInvocationList())
+                    try
                     {
-                        try
-                        {
-                            func?.DynamicInvoke(from, to);
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.log.Error($"Exception while invoking ActiveSceneChanged! {ex}");
-                        }
+                        func?.DynamicInvoke(prevScene, nextScene);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.log.Error($"Exception while invoking ActiveSceneChanged! {ex}");
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                Logger.log.Warn($"'{ex.TargetSite}' threw an exception: {ex.Message}\n{ex.StackTrace}");
             }
         }
 
         public void OnApplicationQuit()
         {
-            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
-
             _harmony.UnpatchAll("com.brian91292.beatsaber.cameraplus");
         }
 
