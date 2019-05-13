@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using IPA.Utilities;
+using LogLevel = IPA.Logging.Logger.Level;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using CameraPlus.SimpleJSON;
@@ -204,18 +205,18 @@ namespace CameraPlus
                 string jsonText = File.ReadAllText(path);
                 if (data.LoadFromJson(jsonText))
                 {
-                    Logger.log.Info("Populated CameraData");
+                    Logger.Log("Populated CameraData");
 
                     if (data.Movements.Count == 0)
                     {
-                        Logger.log.Info("No movement data!");
+                        Logger.Log("No movement data!");
                         return false;
                     }
                     eventID = 0;
                     UpdatePosAndRot();
                     dataLoaded = true;
 
-                    Logger.log.Info($"Found {data.Movements.Count} entries in: {path}");
+                    Logger.Log($"Found {data.Movements.Count} entries in: {path}");
                     return true;
                 }
             }
@@ -271,7 +272,7 @@ namespace CameraPlus
 
         public static void CreateExampleScript()
         {
-            string path = Path.Combine(BeatSaber.UserDataPath, Plugin.PluginName, "Scripts");
+            string path = Path.Combine(BeatSaber.UserDataPath, Plugin.Name, "Scripts");
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
             string defaultScript = Path.Combine(path, "ExampleMovementScript.json");

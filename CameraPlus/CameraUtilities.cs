@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Collections;
 using IPA.Utilities;
+using LogLevel = IPA.Logging.Logger.Level;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -17,7 +18,7 @@ namespace CameraPlus
         
         public static void AddNewCamera(string cameraName, Config CopyConfig = null, bool meme = false)
         {
-            string path = Path.Combine(BeatSaber.UserDataPath, Plugin.PluginName, $"{cameraName}.cfg");
+            string path = Path.Combine(BeatSaber.UserDataPath, Plugin.Name, $"{cameraName}.cfg");
             if (!File.Exists(path))
             {
                 // Try to copy their old config file into the new camera location
@@ -30,7 +31,7 @@ namespace CameraPlus
                             Directory.CreateDirectory(Path.GetDirectoryName(path));
 
                         File.Move(oldPath, path);
-                        Logger.log.Info($"Copied old {Plugin.MainCamera}.cfg into new {Plugin.PluginName} folder in UserData");
+                        Logger.Log($"Copied old {Plugin.MainCamera}.cfg into new {Plugin.Name} folder in UserData");
                     }
                 }
 
@@ -76,11 +77,11 @@ namespace CameraPlus
                 config.FirstPersonPositionOffset = config.DefaultFirstPersonPositionOffset;
                 config.FirstPersonRotationOffset = config.DefaultFirstPersonRotationOffset;
                 config.Save();
-                Logger.log.Info($"Success creating new camera \"{cameraName}\"");
+                Logger.Log($"Success creating new camera \"{cameraName}\"");
             }
             else
             {
-                Logger.log.Info($"Camera \"{cameraName}\" already exists!");
+                Logger.Log($"Camera \"{cameraName}\" already exists!");
             }
         }
 
@@ -120,7 +121,7 @@ namespace CameraPlus
                 }
                 else
                 {
-                    Logger.log.Warn("One does not simply remove the main camera!");
+                    Logger.Log("One does not simply remove the main camera!", LogLevel.Warning);
                 }
             }
             catch (Exception ex)
@@ -130,7 +131,8 @@ namespace CameraPlus
                     ? $"Could not remove camera with configuration: '{Path.GetFileName(instance.Config.FilePath)}'."
                     : $"Could not remove camera.");
 
-                Logger.log.Error($"{msg}\n{ex.Source} threw an exception: {ex.Message}\n{ex.StackTrace}");
+                Logger.Log($"{msg} CameraUtilities.RemoveCamera() threw an exception:" +
+                    $" {ex.Message}\n{ex.StackTrace}", LogLevel.Error);
             }
             return false;
         }
@@ -139,20 +141,21 @@ namespace CameraPlus
         {
             try
             {
-                string[] files = Directory.GetFiles(Path.Combine(BeatSaber.UserDataPath, Plugin.PluginName));
+                string[] files = Directory.GetFiles(Path.Combine(BeatSaber.UserDataPath, Plugin.Name));
                 foreach (string filePath in files)
                 {
                     string fileName = Path.GetFileName(filePath);
                     if (fileName.EndsWith(".cfg") && !Plugin.Instance.Cameras.ContainsKey(fileName))
                     {
-                        Logger.log.Info($"Found config {filePath}!");
+                        Logger.Log($"Found config {filePath}!");
                         Plugin.Instance.Cameras.TryAdd(fileName, new CameraPlusInstance(filePath));
                     }
                 }
             }
             catch (Exception ex)
             {
-                Logger.log.Error($"Exception while reloading cameras! {ex.Source}: {ex.Message}\n{ex.StackTrace}");
+                Logger.Log($"Exception while reloading cameras! Exception:" +
+                    $" {ex.Message}\n{ex.StackTrace}", LogLevel.Error);
             }
         }
 

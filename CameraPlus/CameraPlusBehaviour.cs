@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using IPA.Utilities;
+using LogLevel = IPA.Logging.Logger.Level;
 using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.SceneManagement;
@@ -107,7 +108,7 @@ namespace CameraPlus
         public virtual void Init(Config config)
         {
             DontDestroyOnLoad(gameObject);
-            Logger.log.Info("Created new camera plus behaviour component!");
+            Logger.Log("Created new camera plus behaviour component!");
 
             Config = config;
             _isMainCamera = Path.GetFileName(Config.FilePath) == $"{Plugin.MainCamera}.cfg";
@@ -119,7 +120,6 @@ namespace CameraPlus
         protected IEnumerator DelayedInit()
         {
             yield return _waitForMainCamera;
-
 
             _mainCamera = Camera.main;
             _menuStrip = null;
@@ -206,7 +206,7 @@ namespace CameraPlus
             FirstPersonOffset = Config.FirstPersonPositionOffset;
             FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
             SceneManager_activeSceneChanged(new Scene(), new Scene());
-            Logger.log.Info($"Camera \"{Path.GetFileName(Config.FilePath)}\" successfully initialized!");
+            Logger.Log($"Camera \"{Path.GetFileName(Config.FilePath)}\" successfully initialized!");
         }
         
         protected virtual void OnDestroy()
@@ -242,7 +242,6 @@ namespace CameraPlus
             {
                 transform.position = _mainCamera.transform.position;
                 transform.rotation = _mainCamera.transform.rotation;
-
             }
             else
             {
@@ -283,7 +282,7 @@ namespace CameraPlus
 
                 if (!replace)
                 {
-                    //Logger.log.Info("Don't need to replace");
+                    //Logger.Log("Don't need to replace");
                     return;
                 }
 
@@ -326,7 +325,7 @@ namespace CameraPlus
             var vrPointers = to.name == "GameCore" ? Resources.FindObjectsOfTypeAll<VRPointer>() : Resources.FindObjectsOfTypeAll<VRPointer>();
             if(vrPointers.Count() == 0)
             {
-                Logger.log.Warn("Failed to get VRPointer!");
+                Logger.Log("Failed to get VRPointer!", LogLevel.Warning);
                 return;
             }
 
@@ -688,7 +687,7 @@ namespace CameraPlus
                 lock (Plugin.Instance.Cameras)
                 {
                     string cameraName = CameraUtilities.GetNextCameraName();
-                    Logger.log.Info($"Adding new config with name {cameraName}.cfg");
+                    Logger.Log($"Adding new config with name {cameraName}.cfg");
                     CameraUtilities.AddNewCamera(cameraName);
                     CameraUtilities.ReloadCameras();
                     CloseContextMenu();
@@ -701,7 +700,7 @@ namespace CameraPlus
                 lock (Plugin.Instance.Cameras)
                 {
                     string cameraName = CameraUtilities.GetNextCameraName();
-                    Logger.log.Notice($"Adding {cameraName}");
+                    Logger.Log($"Adding {cameraName}", LogLevel.Notice);
                     CameraUtilities.AddNewCamera(cameraName, Config);
                     CameraUtilities.ReloadCameras();
                     CloseContextMenu();
@@ -718,7 +717,7 @@ namespace CameraPlus
                         _isCameraDestroyed = true;
                         CreateScreenRenderTexture();
                         CloseContextMenu();
-                        Logger.log.Notice("Camera removed!");
+                        Logger.Log("Camera removed!", LogLevel.Notice);
                     }
                     else
                     {
@@ -935,7 +934,7 @@ namespace CameraPlus
             ToolStripItem _addCameraMovement = _addMenu.DropDownItems.Add("Camera Movement", null, (p1, p2) =>
             {
                 OpenFileDialog ofd = new OpenFileDialog();
-                string path = Path.Combine(BeatSaber.UserDataPath, Plugin.PluginName, "Scripts");
+                string path = Path.Combine(BeatSaber.UserDataPath, Plugin.Name, "Scripts");
                 CameraMovement.CreateExampleScript();
                 ofd.InitialDirectory = path;
                 ofd.Title = "Select a script";

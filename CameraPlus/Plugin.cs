@@ -3,7 +3,9 @@ using System.Reflection;
 using System.Collections;
 using System.Collections.Concurrent;
 using IPA;
+using IPA.Loader;
 using IPALogger = IPA.Logging.Logger;
+using LogLevel = IPA.Logging.Logger.Level;
 using Harmony;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -20,9 +22,15 @@ namespace CameraPlus
         public ConcurrentDictionary<string, CameraPlusInstance> Cameras = new ConcurrentDictionary<string, CameraPlusInstance>();
 
         public static Plugin Instance { get; private set; }
-        public static string PluginName => "CameraPlus";
-        public static string MainCamera => Plugin.PluginName.ToLower();
-        
+        public static string Name => "CameraPlus";
+        public static string MainCamera => "cameraplus";
+
+        public void Init(IPALogger logger)
+        {
+            Logger.log = logger;
+            Logger.Log("Logger prepared", LogLevel.Debug);
+        }
+
         public void OnApplicationStart()
         {
             if (_init) return;
@@ -36,21 +44,21 @@ namespace CameraPlus
             }
             catch (Exception ex)
             {
-                Logger.log.Error($"Failed to apply harmony patches! {ex}");
+                Logger.Log($"Failed to apply harmony patches! {ex}", LogLevel.Error);
             }
             
             // Add our default cameraplus camera
             CameraUtilities.AddNewCamera(Plugin.MainCamera);
 
-            Logger.log.Notice($"{Plugin.PluginName} has started");
+            Logger.Log($"{Plugin.Name} has started", LogLevel.Notice);
         }
 
-        public void OnActiveSceneChanged(Scene prevScene, Scene nextScene)
+        public void OnActiveSceneChanged(Scene from, Scene to)
         {
-            SharedCoroutineStarter.instance.StartCoroutine(DelayedActiveSceneChanged(prevScene, nextScene));
+            SharedCoroutineStarter.instance.StartCoroutine(DelayedActiveSceneChanged(from, to));
         }
 
-        IEnumerator DelayedActiveSceneChanged(Scene prevScene, Scene nextScene)
+        private IEnumerator DelayedActiveSceneChanged(Scene from, Scene to)
         {
             yield return new WaitForSeconds(0.5f);
 
@@ -64,11 +72,12 @@ namespace CameraPlus
                 {
                     try
                     {
-                        func?.DynamicInvoke(prevScene, nextScene);
+                        func?.DynamicInvoke(from, to);
                     }
                     catch (Exception ex)
                     {
-                        Logger.log.Error($"Exception while invoking ActiveSceneChanged! {ex}");
+                        Logger.Log($"Exception while invoking ActiveSceneChanged:" +
+                            $" {ex.Message}\n{ex.StackTrace}", LogLevel.Error);
                     }
                 }
             }
@@ -79,17 +88,9 @@ namespace CameraPlus
             _harmony.UnpatchAll("com.brian91292.beatsaber.cameraplus");
         }
 
-        public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
-        {
-        }
-
-        public void OnSceneUnloaded(Scene scene)
-        {
-        }
-
-        public void OnUpdate()
-        {
-        }
+        public void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode) { }
+        public void OnSceneUnloaded(Scene scene) { }
+        public void OnUpdate() { }
 
         public void OnFixedUpdate()
         {
@@ -100,12 +101,6 @@ namespace CameraPlus
                 CameraPlusBehaviour.SetCursor(CameraPlusBehaviour.CursorType.None);
                 CameraPlusBehaviour.wasWithinBorder = false;
             }
-        }
-
-        public void Init(IPALogger logger)
-        {
-            Logger.log = logger;
-            Logger.log.Debug("Logger prepared");
         }
     }
 }
