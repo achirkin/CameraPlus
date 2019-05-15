@@ -7,7 +7,7 @@ CameraPlus is a Beat Saber mod that allows for multiple wide FOV cameras with sm
 [![How to use CameraPlus](https://i.imgur.com/UbKrHAF.png)](https://www.youtube.com/watch?v=RpYoMiKJygQ)
 
 # Installing
-1. Use the modsaber installer: https://github.com/lolPants/modsaber-installer/releases
+1. Use the Beat Saber Mod Manager installer: https://github.com/beat-saber-modding-group/BeatSaberModInstaller/releases
 		It is the easiest method, it will do all these steps below in 1 click.
 	
 ### To install manually:
@@ -16,7 +16,7 @@ CameraPlus is a Beat Saber mod that allows for multiple wide FOV cameras with sm
 		For Oculus Home: \Oculus Apps\Software\hyperbolic-magnetism-beat-saber\
 		For Steam: \steamapps\common\Beat Saber\
 		(The folder that contains Beat Saber.exe)
-	3b. Done! You've installed the Custom Avatar Plugin.
+	3b. Done! You've installed the CameraPlus Plugin.
 # Usage
 To edit the settings of any camera in real time, right click on the Beat Saber game window! A context menu will appear with options specific to the camera that you right clicked on!
 

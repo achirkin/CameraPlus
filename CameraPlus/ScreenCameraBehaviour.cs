@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 namespace CameraPlus
 {
@@ -28,7 +24,7 @@ namespace CameraPlus
 
         public void Awake()
         {
-            Plugin.Log("Created new screen camera behaviour component!");
+            Logger.Log("Created new screen camera behaviour component!");
             DontDestroyOnLoad(gameObject);
 
             _cam = gameObject.AddComponent<Camera>();

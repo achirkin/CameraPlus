@@ -62,7 +62,6 @@ namespace CameraPlus
                 }
 
             if (_grabbingController == null || !(_grabbingController.triggerValue <= 0.9f)) return;
-            if (_grabbingController == null) return;
             SaveToConfig();
             _grabbingController = null;
         }

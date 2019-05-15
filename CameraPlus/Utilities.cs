@@ -1,13 +1,10 @@
-﻿using IllusionInjector;
-using IllusionPlugin;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using IPA.Old;
+using IPA.Loader;
 using UnityEngine;
+using LogLevel = IPA.Logging.Logger.Level;
 
 namespace CameraPlus
 {
@@ -55,13 +52,21 @@ namespace CameraPlus
 
         public static bool IsModInstalled(string modName)
         {
+            Logger.Log($"Looking in BSIPA for {modName}.", LogLevel.Debug);
+            foreach (PluginLoader.PluginInfo p in PluginManager.AllPlugins)
+            {
+                if (p.Metadata.Name == modName || p.Metadata.Id == modName)
+                    return true;
+            }
+
+            Logger.Log($"{modName} not found in BSIPA. Looking through the legacy list instead...", LogLevel.Debug);
             foreach (IPlugin p in PluginManager.Plugins)
             {
                 if (p.Name == modName)
-                {
                     return true;
-                }
             }
+
+            Logger.Log($"{modName} was not found.", LogLevel.Debug);
             return false;
         }
     }
