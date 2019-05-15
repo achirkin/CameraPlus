@@ -5,7 +5,7 @@
   "gameVersion": "0.13.2",
   "id": "CameraPlus",
   "name": "CameraPlus",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "dependsOn": {
     "BSIPA": "^3.12.14",
     "Harmony": "^1.2.0",
