@@ -391,7 +391,6 @@ namespace CameraPlus
                 transform.position = Vector3.Lerp(transform.position, camera.position + FirstPersonOffset,
                     Config.positionSmooth * Time.unscaledDeltaTime);
 
-             //   transform.eulerAngles = FirstPersonRotationOffset;
              if(!Config.forceFirstPersonUpRight)
                 transform.rotation = Quaternion.Slerp(transform.rotation, camera.rotation * Quaternion.Euler(Config.FirstPersonRotationOffset),
                     Config.rotationSmooth * Time.unscaledDeltaTime);
