@@ -1,14 +1,15 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
+using System.Collections;
 using System.Windows.Forms;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using IPA.Utilities;
+using LogLevel = IPA.Logging.Logger.Level;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.XR;
+using UnityEngine.SceneManagement;
 using VRUIControls;
 using Cursor = System.Windows.Forms.Cursor;
 using Screen = UnityEngine.Screen;
@@ -107,10 +108,10 @@ namespace CameraPlus
         public virtual void Init(Config config)
         {
             DontDestroyOnLoad(gameObject);
-            Plugin.Log("Created new camera plus behaviour component!");
+            Logger.Log("Created new camera plus behaviour component!");
 
             Config = config;
-            _isMainCamera = Path.GetFileName(Config.FilePath) == "cameraplus.cfg";
+            _isMainCamera = Path.GetFileName(Config.FilePath) == $"{Plugin.MainCamera}.cfg";
             _contextMenuEnabled = !Environment.CommandLine.Contains("fpfc");
 
             StartCoroutine(DelayedInit());
@@ -119,7 +120,6 @@ namespace CameraPlus
         protected IEnumerator DelayedInit()
         {
             yield return _waitForMainCamera;
-
 
             _mainCamera = Camera.main;
             _menuStrip = null;
@@ -206,7 +206,7 @@ namespace CameraPlus
             FirstPersonOffset = Config.FirstPersonPositionOffset;
             FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
             SceneManager_activeSceneChanged(new Scene(), new Scene());
-            Plugin.Log($"Camera \"{Path.GetFileName(Config.FilePath)}\" successfully initialized!\"");
+            Logger.Log($"Camera \"{Path.GetFileName(Config.FilePath)}\" successfully initialized!");
         }
         
         protected virtual void OnDestroy()
@@ -242,7 +242,6 @@ namespace CameraPlus
             {
                 transform.position = _mainCamera.transform.position;
                 transform.rotation = _mainCamera.transform.rotation;
-
             }
             else
             {
@@ -283,7 +282,7 @@ namespace CameraPlus
 
                 if (!replace)
                 {
-                    //Plugin.Log("Don't need to replace");
+                    //Logger.Log("Don't need to replace");
                     return;
                 }
 
@@ -326,7 +325,7 @@ namespace CameraPlus
             var vrPointers = to.name == "GameCore" ? Resources.FindObjectsOfTypeAll<VRPointer>() : Resources.FindObjectsOfTypeAll<VRPointer>();
             if(vrPointers.Count() == 0)
             {
-                Plugin.Log("Failed to get VRPointer!");
+                Logger.Log("Failed to get VRPointer!", LogLevel.Warning);
                 return;
             }
 
@@ -395,6 +394,7 @@ namespace CameraPlus
                 transform.rotation = Quaternion.Slerp(transform.rotation, camera.rotation * Quaternion.Euler(Config.FirstPersonRotationOffset),
                     Config.rotationSmooth * Time.unscaledDeltaTime);
              else
+
                 {
                     Quaternion rot = Quaternion.Slerp(transform.rotation, camera.rotation * Quaternion.Euler(Config.FirstPersonRotationOffset),
                         Config.rotationSmooth * Time.unscaledDeltaTime);
@@ -687,7 +687,7 @@ namespace CameraPlus
                 lock (Plugin.Instance.Cameras)
                 {
                     string cameraName = CameraUtilities.GetNextCameraName();
-                    Plugin.Log($"Adding new config with name {cameraName}.cfg");
+                    Logger.Log($"Adding new config with name {cameraName}.cfg");
                     CameraUtilities.AddNewCamera(cameraName);
                     CameraUtilities.ReloadCameras();
                     CloseContextMenu();
@@ -700,7 +700,7 @@ namespace CameraPlus
                 lock (Plugin.Instance.Cameras)
                 {
                     string cameraName = CameraUtilities.GetNextCameraName();
-                    Plugin.Log($"Adding {cameraName}");
+                    Logger.Log($"Adding {cameraName}", LogLevel.Notice);
                     CameraUtilities.AddNewCamera(cameraName, Config);
                     CameraUtilities.ReloadCameras();
                     CloseContextMenu();
@@ -717,9 +717,12 @@ namespace CameraPlus
                         _isCameraDestroyed = true;
                         CreateScreenRenderTexture();
                         CloseContextMenu();
-                        Plugin.Log("Camera removed!");
+                        Logger.Log("Camera removed!", LogLevel.Notice);
                     }
-                    else MessageBox.Show("Cannot remove main camera!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    else
+                    {
+                        MessageBox.Show("Cannot remove main camera!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             });
             _menuStrip.Items.Add(new ToolStripSeparator());
@@ -931,7 +934,7 @@ namespace CameraPlus
             ToolStripItem _addCameraMovement = _addMenu.DropDownItems.Add("Camera Movement", null, (p1, p2) =>
             {
                 OpenFileDialog ofd = new OpenFileDialog();
-                string path = Path.Combine(Environment.CurrentDirectory, "UserData", "CameraPlus", "Scripts");
+                string path = Path.Combine(BeatSaber.UserDataPath, Plugin.Name, "Scripts");
                 CameraMovement.CreateExampleScript();
                 ofd.InitialDirectory = path;
                 ofd.Title = "Select a script";
