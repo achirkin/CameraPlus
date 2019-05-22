@@ -2,14 +2,13 @@
   "$schema": "https://raw.githubusercontent.com/nike4613/ModSaber-MetadataFileSchema/master/Schema.json",
   "author": "Various Modders",
   "description": "",
-  "gameVersion": "0.13.2",
+  "gameVersion": "1.0.0",
   "id": "CameraPlus",
   "name": "CameraPlus",
-  "version": "3.4.1",
+  "version": "3.4.3",
   "dependsOn": {
     "BSIPA": "^3.12.14",
-    "Harmony": "^1.2.0",
-    "SongLoader": "^6.12.4"
+    "Harmony": "^1.2.0"
   },
   "features": []
 }

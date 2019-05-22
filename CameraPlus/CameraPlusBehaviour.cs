@@ -57,8 +57,6 @@ namespace CameraPlus
         protected bool _thirdPerson;
         public Vector3 ThirdPersonPos;
         public Vector3 ThirdPersonRot;
-        public Vector3 FirstPersonOffset;
-        public Vector3 FirstPersonRotationOffset;
         public Config Config;
 
         protected RenderTexture _camRenderTexture;
@@ -97,13 +95,13 @@ namespace CameraPlus
         protected Vector2 _lastGrabPos = new Vector2(0, 0);
         protected Vector2 _lastScreenPos;
         protected bool _isBottom = false, _isLeft = false;
-        protected ContextMenuStrip _menuStrip = new ContextMenuStrip();
+        protected ContextMenuStrip _menuStrip = null; //  new ContextMenuStrip();
         protected List<ToolStripItem> _controlTracker = new List<ToolStripItem>();
         
         public static CursorType currentCursor = CursorType.None;
         public static bool wasWithinBorder = false;
         public static bool anyInstanceBusy = false;
-        private static bool _contextMenuEnabled = true;
+        private static bool _contextMenuEnabled = false;
         
         public virtual void Init(Config config)
         {
@@ -112,7 +110,7 @@ namespace CameraPlus
 
             Config = config;
             _isMainCamera = Path.GetFileName(Config.FilePath) == $"{Plugin.MainCamera}.cfg";
-            _contextMenuEnabled = !Environment.CommandLine.Contains("fpfc");
+        //    _contextMenuEnabled = !Environment.CommandLine.Contains("fpfc");
 
             StartCoroutine(DelayedInit());
         }
@@ -203,8 +201,8 @@ namespace CameraPlus
 
             Plugin.Instance.ActiveSceneChanged += SceneManager_activeSceneChanged;
 
-            FirstPersonOffset = Config.FirstPersonPositionOffset;
-            FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
+      //      FirstPersonOffset = Config.FirstPersonPositionOffset;
+     //       FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
             SceneManager_activeSceneChanged(new Scene(), new Scene());
             Logger.Log($"Camera \"{Path.GetFileName(Config.FilePath)}\" successfully initialized!");
         }
@@ -247,8 +245,8 @@ namespace CameraPlus
             {
                 ThirdPersonPos = Config.Position;
                 ThirdPersonRot = Config.Rotation;
-                FirstPersonOffset = Config.FirstPersonPositionOffset;
-                FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
+          //      FirstPersonOffset = Config.FirstPersonPositionOffset;
+          //      FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
             }
 
             SetCullingMask();
@@ -356,8 +354,8 @@ namespace CameraPlus
                     {
                         transform.position = _mainCamera.transform.position;
                         transform.rotation = _mainCamera.transform.rotation;
-                        FirstPersonOffset = Config.FirstPersonPositionOffset;
-                        FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
+              //          FirstPersonOffset = Config.FirstPersonPositionOffset;
+            //            FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
                     }
                     else
                     {
@@ -386,8 +384,8 @@ namespace CameraPlus
                     _cameraCube.eulerAngles = ThirdPersonRot;
                     return;
                 }
-
-                transform.position = Vector3.Lerp(transform.position, camera.position + FirstPersonOffset,
+           //     Console.WriteLine(Config.FirstPersonPositionOffset.ToString());
+                transform.position = Vector3.Lerp(transform.position, camera.position + Config.FirstPersonPositionOffset,
                     Config.positionSmooth * Time.unscaledDeltaTime);
 
              if(!Config.forceFirstPersonUpRight)
@@ -734,8 +732,8 @@ namespace CameraPlus
                 ThirdPerson = Config.thirdPerson;
                 ThirdPersonPos = Config.Position;
                 ThirdPersonRot = Config.Rotation;
-                FirstPersonOffset = Config.FirstPersonPositionOffset;
-                FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
+                //FirstPersonOffset = Config.FirstPersonPositionOffset;
+          //     FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
                 CreateScreenRenderTexture();
                 CloseContextMenu();
                 Config.Save();
@@ -760,8 +758,8 @@ namespace CameraPlus
                     Config.FirstPersonRotationOffset = Config.DefaultFirstPersonRotationOffset;
                     ThirdPersonPos = Config.DefaultPosition;
                     ThirdPersonRot = Config.DefaultRotation;
-                    FirstPersonOffset = Config.FirstPersonPositionOffset;
-                    FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
+                    //FirstPersonOffset = Config.FirstPersonPositionOffset;
+             //       FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
                     Config.Save();
                     CloseContextMenu();
                 });

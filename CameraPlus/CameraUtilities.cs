@@ -141,6 +141,8 @@ namespace CameraPlus
         {
             try
             {
+                if (!Directory.Exists(Path.Combine(BeatSaber.UserDataPath, Plugin.Name)))
+                    Directory.CreateDirectory(Path.Combine(BeatSaber.UserDataPath, Plugin.Name));
                 string[] files = Directory.GetFiles(Path.Combine(BeatSaber.UserDataPath, Plugin.Name));
                 foreach (string filePath in files)
                 {

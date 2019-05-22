@@ -61,8 +61,8 @@ namespace CameraPlus
         private IEnumerator DelayedActiveSceneChanged(Scene from, Scene to)
         {
             yield return new WaitForSeconds(0.5f);
-
             // If any new cameras have been added to the config folder, render them
+           // if(to.name == )
             CameraUtilities.ReloadCameras();
 
             if (ActiveSceneChanged != null)
