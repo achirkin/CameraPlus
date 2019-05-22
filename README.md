@@ -1,6 +1,7 @@
 # CameraPlus
 CameraPlus is a Beat Saber mod that allows for multiple wide FOV cameras with smoothed movement, which makes for a much more pleasant overall spectator experience.
 
+## Right Click Menu Currently Disabled for Compatibility Reasons
 [Video Comparison](https://youtu.be/MysLXKSXGTY)  
 [Third Person Preview](https://youtu.be/ltIhpt-n6b8)
 
