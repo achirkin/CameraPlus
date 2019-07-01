@@ -167,45 +167,45 @@ namespace CameraPlus
                     }
                     //Layer
                     GUI.Box(new Rect(menuPos.x, menuPos.y + 65, 290, 70), "Layer: " + parentBehaviour.Config.layer);
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 85, 140, 30), new GUIContent("+")))
-                    {
-                        parentBehaviour.Config.layer++;
-                        parentBehaviour.CreateScreenRenderTexture();
-                        parentBehaviour.Config.Save();
-                    }
-                    if (GUI.Button(new Rect(menuPos.x + 155, menuPos.y + 85, 140, 30), new GUIContent("-")))
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 85, 140, 30), new GUIContent("-")))
                     {
                         parentBehaviour.Config.layer--;
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
-                    //FOV
-                    GUI.Box(new Rect(menuPos.x, menuPos.y + 125, 290, 70), "FOV: " + parentBehaviour.Config.fov);
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 145, 140, 30), new GUIContent("+")))
+                    if (GUI.Button(new Rect(menuPos.x + 155, menuPos.y + 85, 140, 30), new GUIContent("+")))
                     {
-                        parentBehaviour.Config.fov++;
-                        parentBehaviour.SetFOV();
+                        parentBehaviour.Config.layer++;
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x + 155, menuPos.y + 145, 140, 30), new GUIContent("-")))
+                    //FOV
+                    GUI.Box(new Rect(menuPos.x, menuPos.y + 125, 290, 70), "FOV: " + parentBehaviour.Config.fov);
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 145, 140, 30), new GUIContent("-")))
                     {
                         parentBehaviour.Config.fov--;
                         parentBehaviour.SetFOV();
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
-                    //Render Scale
-                    GUI.Box(new Rect(menuPos.x, menuPos.y + 185, 290, 70), "Render Scale: " + parentBehaviour.Config.renderScale.ToString("F1"));
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 205, 140, 30), new GUIContent("+")))
+                    if (GUI.Button(new Rect(menuPos.x + 155, menuPos.y + 145, 140, 30), new GUIContent("+")))
                     {
-                        parentBehaviour.Config.renderScale += 0.1f;
+                        parentBehaviour.Config.fov++;
+                        parentBehaviour.SetFOV();
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x + 155, menuPos.y + 205, 140, 30), new GUIContent("-")))
+                    //Render Scale
+                    GUI.Box(new Rect(menuPos.x, menuPos.y + 185, 290, 70), "Render Scale: " + parentBehaviour.Config.renderScale.ToString("F1"));
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 205, 140, 30), new GUIContent("-")))
                     {
                         parentBehaviour.Config.renderScale -= 0.1f;
+                        parentBehaviour.CreateScreenRenderTexture();
+                        parentBehaviour.Config.Save();
+                    }
+                    if (GUI.Button(new Rect(menuPos.x + 155, menuPos.y + 205, 140, 30), new GUIContent("+")))
+                    {
+                        parentBehaviour.Config.renderScale += 0.1f;
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
