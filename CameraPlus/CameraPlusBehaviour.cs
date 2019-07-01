@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Collections;
-using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using IPA.Utilities;
@@ -11,7 +10,6 @@ using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.SceneManagement;
 using VRUIControls;
-using Cursor = System.Windows.Forms.Cursor;
 using Screen = UnityEngine.Screen;
 
 namespace CameraPlus
@@ -87,7 +85,7 @@ namespace CameraPlus
         protected bool _xAxisLocked = false;
         protected bool _yAxisLocked = false;
         protected bool _contextMenuOpen = false;
-        protected bool _isCameraDestroyed = false;
+        internal bool _isCameraDestroyed = false;
         protected bool _isMainCamera = false;
         protected bool _isTopmostAtCursorPos = false;
         protected DateTime _lastRenderUpdate;
@@ -95,13 +93,11 @@ namespace CameraPlus
         protected Vector2 _lastGrabPos = new Vector2(0, 0);
         protected Vector2 _lastScreenPos;
         protected bool _isBottom = false, _isLeft = false;
-        protected ContextMenuStrip _menuStrip = null; //  new ContextMenuStrip();
-        protected List<ToolStripItem> _controlTracker = new List<ToolStripItem>();
-        
+        protected static ContextMenu _contextMenu = null;
         public static CursorType currentCursor = CursorType.None;
         public static bool wasWithinBorder = false;
         public static bool anyInstanceBusy = false;
-        private static bool _contextMenuEnabled = false;
+        private static bool _contextMenuEnabled = true;
         
         public virtual void Init(Config config)
         {
@@ -120,7 +116,13 @@ namespace CameraPlus
             yield return _waitForMainCamera;
 
             _mainCamera = Camera.main;
-            _menuStrip = null;
+            //      _menuStrip = null;
+            if(_contextMenu == null)
+            {
+                var menuObject = new GameObject("CameraPlusMenu");
+                DontDestroyOnLoad(menuObject);
+                _contextMenu = menuObject.AddComponent<ContextMenu>();
+            }
             XRSettings.showDeviceView = false;
 
             Config.ConfigChangedEvent += PluginOnConfigChangedEvent;
@@ -254,7 +256,7 @@ namespace CameraPlus
             SetFOV();
         }
 
-        protected virtual void CreateScreenRenderTexture()
+        internal virtual void CreateScreenRenderTexture()
         {
             HMMainThreadDispatcher.instance.Enqueue(delegate
             {
@@ -338,8 +340,8 @@ namespace CameraPlus
 
         protected void OnApplicationFocus(bool hasFocus)
         {
-            if(!hasFocus && GetActiveWindow() == IntPtr.Zero)
-                CloseContextMenu();
+      //      if(!hasFocus && GetActiveWindow() == IntPtr.Zero)
+       //         CloseContextMenu();
         }
 
         protected virtual void Update()
@@ -434,13 +436,13 @@ namespace CameraPlus
             _mainCamera = Camera.main;
         }
 
-        protected virtual void SetFOV()
+        internal virtual void SetFOV()
         {
             if (_cam == null) return;
             _cam.fieldOfView = Config.fov;
         }
 
-        protected virtual void SetCullingMask()
+        internal virtual void SetCullingMask()
         {
             if(Config.transparentWalls)
                 _cam.cullingMask &= ~(1 << TransparentWallsPatch.WallLayerMask);
@@ -494,8 +496,10 @@ namespace CameraPlus
             return null;
         }
 
-        protected void CloseContextMenu()
+        internal void CloseContextMenu()
         {
+            _contextMenu.DisableMenu();
+            /*
             if (_menuStrip != null)
             {
                 _menuStrip.Close();
@@ -509,6 +513,7 @@ namespace CameraPlus
                 _menuStrip.Dispose();
                 _menuStrip = null;
             }
+            */
             _contextMenuOpen = false;
         }
         
@@ -547,9 +552,9 @@ namespace CameraPlus
             // Close the context menu when we click anywhere within the bounds of the application
             if (!_mouseHeld && (holdingLeftClick || holdingRightClick))
             {
-                if (_menuStrip != null && mousePos.x > 0 && mousePos.x < Screen.width && mousePos.y > 0 && mousePos.y < Screen.height)
+                if (/*_menuStrip != null &&*/ mousePos.x > 0 && mousePos.x < Screen.width && mousePos.y > 0 && mousePos.y < Screen.height)
                 {
-                    CloseContextMenu();
+          //          CloseContextMenu();
                 }
             }
 
@@ -649,14 +654,14 @@ namespace CameraPlus
             else if (holdingRightClick && _contextMenuEnabled)
             {
                 if (_mouseHeld) return;
-                if (_menuStrip == null)
-                {
+         //       if (_menuStrip == null)
+          //      {
                     DisplayContextMenu();
                     _contextMenuOpen = true;
-                }
-                _menuStrip.SetBounds(Cursor.Position.X, Cursor.Position.Y, 0, 0);
-                if (!_menuStrip.Visible)
-                    _menuStrip.Show();
+         //       }
+         //       _menuStrip.SetBounds(Cursor.Position.X, Cursor.Position.Y, 0, 0);
+         //       if (!_menuStrip.Visible)
+         //           _menuStrip.Show();
                 anyInstanceBusy = true;
                 _mouseHeld = true;
             }
@@ -678,6 +683,8 @@ namespace CameraPlus
 
         void DisplayContextMenu()
         {
+            _contextMenu.EnableMenu(Input.mousePosition, this);
+            /*
             _menuStrip = new ContextMenuStrip();
             // Adds a new camera into the scene
             _menuStrip.Items.Add("Add New Camera", null, (p1, p2) =>
@@ -999,6 +1006,7 @@ namespace CameraPlus
                 CloseContextMenu();
             });
             _menuStrip.Items.Add(_extrasMenu);
+            */
         }
     }
 }
