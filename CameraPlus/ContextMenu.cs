@@ -14,8 +14,8 @@ namespace CameraPlus
             get
             {
                 return new Vector2(
-                   Mathf.Min(mousePosition.x, Screen.width - 310),
-                   Mathf.Min(mousePosition.y, Screen.height - 400)
+                   Mathf.Min(mousePosition.x, (Screen.width * ( 0.806249998f / (Screen.width / 1600f)))),
+                   Mathf.Min(mousePosition.y, (Screen.height * (0.555555556f / (Screen.height / 900f))))
                     );
             }
         }
@@ -48,7 +48,16 @@ namespace CameraPlus
 
             if (showMenu)
             {
+                Vector3 scale;
+                float originalWidth = 1600f;
+                float originalHeight = 900f;
 
+
+                scale.x = Screen.width / originalWidth;
+                scale.y = Screen.height / originalHeight;
+                scale.z = 1;
+                Matrix4x4 originalMatrix = GUI.matrix;
+                GUI.matrix = Matrix4x4.TRS(new Vector3(0, 0, 0), Quaternion.identity, scale);
                 //Layer boxes for Opacity
                 GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 400), "CameraPlus");
                 GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 400), "CameraPlus");
@@ -222,6 +231,8 @@ namespace CameraPlus
 
 
                 }
+
+                GUI.matrix = originalMatrix;
             }
         }
     }
