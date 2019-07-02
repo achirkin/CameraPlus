@@ -14,8 +14,8 @@ namespace CameraPlus
             get
             {
                 return new Vector2(
-                   Mathf.Min(mousePosition.x, (Screen.width * ( 0.806249998f / (Screen.width / 1600f)))),
-                   Mathf.Min(mousePosition.y, (Screen.height * (0.555555556f / (Screen.height / 900f))))
+                   Mathf.Min(mousePosition.x / (Screen.width / 1600f), (Screen.width * ( 0.806249998f / (Screen.width / 1600f)))),
+                   Mathf.Min(mousePosition.y / (Screen.height / 900f), (Screen.height * (0.555555556f / (Screen.height / 900f))))
                     );
             }
         }
