@@ -93,6 +93,7 @@ namespace CameraPlus
         protected Vector2 _lastGrabPos = new Vector2(0, 0);
         protected Vector2 _lastScreenPos;
         protected bool _isBottom = false, _isLeft = false;
+        protected static GameObject MenuObj = null;
         protected static ContextMenu _contextMenu = null;
         public static CursorType currentCursor = CursorType.None;
         public static bool wasWithinBorder = false;
@@ -119,9 +120,8 @@ namespace CameraPlus
             //      _menuStrip = null;
             if(_contextMenu == null)
             {
-                var menuObject = new GameObject("CameraPlusMenu");
-                DontDestroyOnLoad(menuObject);
-                _contextMenu = menuObject.AddComponent<ContextMenu>();
+                MenuObj = new GameObject("CameraPlusMenu");
+                _contextMenu = MenuObj.AddComponent<ContextMenu>();
             }
             XRSettings.showDeviceView = false;
 
@@ -499,6 +499,7 @@ namespace CameraPlus
         internal void CloseContextMenu()
         {
             _contextMenu.DisableMenu();
+            Destroy(MenuObj);
             /*
             if (_menuStrip != null)
             {
@@ -683,6 +684,11 @@ namespace CameraPlus
 
         void DisplayContextMenu()
         {
+            if (_contextMenu == null)
+            {
+                MenuObj = new GameObject("CameraPlusMenu");
+                _contextMenu = MenuObj.AddComponent<ContextMenu>();
+            }
             _contextMenu.EnableMenu(Input.mousePosition, this);
             /*
             _menuStrip = new ContextMenuStrip();
