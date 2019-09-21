@@ -198,6 +198,9 @@ namespace CameraPlus
         {
             _saving = true;
             ConfigSerializer.SaveConfig(this, FilePath);
+            // sets saving back to false cause SaveConfig wont write the file at all if nothing has changed
+            // and if so the FileWatcher would not get triggered so saving would stuck at true
+            _saving = false;
         }
 
         public void Load()
