@@ -15,14 +15,13 @@ namespace CameraPlus
             {
                 return new Vector2(
                    Mathf.Min(mousePosition.x / (Screen.width / 1600f), (Screen.width * ( 0.806249998f / (Screen.width / 1600f)))),
-                   Mathf.Min(mousePosition.y / (Screen.height / 900f), (Screen.height * (0.555555556f / (Screen.height / 900f))))
+                   Mathf.Min((Screen.height - mousePosition.y) / (Screen.height / 900f), (Screen.height * (0.555555556f / (Screen.height / 900f))))
                     );
             }
         }
         internal Vector2 mousePosition;
         internal bool showMenu;
         internal bool layoutMode = false;
-        internal bool verify38 = false;
         internal CameraPlusBehaviour parentBehaviour;
         public void Awake()
         {
@@ -35,10 +34,10 @@ namespace CameraPlus
             showMenu = true;
             this.parentBehaviour = parentBehaviour;
             layoutMode = false;
-            verify38 = false;
         }
         public void DisableMenu()
         {
+            if (!this) return;
             this.enabled = false;
      //       Console.WriteLine("Disable Menu");
             showMenu = false;
@@ -62,21 +61,7 @@ namespace CameraPlus
                 GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 400), "CameraPlus");
                 GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 400), "CameraPlus");
                 GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 400), "CameraPlus");
-                if (verify38)
-                {
-                    GUI.Box(new Rect(menuPos.x, menuPos.y + 35, 290, 70), "Are You Sure?");
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 75, 140, 30), new GUIContent("Yes.")))
-                    {
-                        parentBehaviour.StartCoroutine(CameraUtilities.Spawn38Cameras());
-                        verify38 = false;
-                        parentBehaviour.CloseContextMenu();
-                    }
-                    if (GUI.Button(new Rect(menuPos.x + 155, menuPos.y + 75, 140, 30), new GUIContent("No.")))
-                    {
-                        verify38 = false;
-                    }
-                }
-                else if (!layoutMode)
+                if (!layoutMode)
                 {
                     if (GUI.Button(new Rect(menuPos.x, menuPos.y + 25, 120, 30), new GUIContent("Add New Camera")))
                     {
@@ -151,13 +136,14 @@ namespace CameraPlus
                         parentBehaviour.CloseContextMenu();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 185, 300, 30), new GUIContent("Close Menu")))
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 355, 300, 30), new GUIContent("Close Menu")))
                     {
                         parentBehaviour.CloseContextMenu();
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 355, 300, 30), new GUIContent("Spawn 38 Cameras")))
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 185, 300, 30), new GUIContent("Spawn 38 Cameras")))
                     {
-                        verify38 = true;
+                        parentBehaviour.StartCoroutine(CameraUtilities.Spawn38Cameras());
+                        parentBehaviour.CloseContextMenu();
                     }
                 }
                 else
