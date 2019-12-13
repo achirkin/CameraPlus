@@ -137,11 +137,11 @@ namespace CameraPlus
         {
             if (to.name == "GameCore")
             {
-                var gpm = Resources.FindObjectsOfTypeAll<GamePauseManager>().First();
-                if (gpm && dataLoaded && !data.ActiveInPauseMenu)
+                var gp = Resources.FindObjectsOfTypeAll<GamePause>().First();
+                if (gp && dataLoaded && !data.ActiveInPauseMenu)
                 {
-                    gpm.GetPrivateField<Signal>("_gameDidResumeSignal").Subscribe(() => { Resume(); });
-                    gpm.GetPrivateField<Signal>("_gameDidPauseSignal").Subscribe(() => { Pause(); });
+                    gp.didResumeEvent += Resume;
+                    gp.didPauseEvent += Pause;
                 }
             }
         }
