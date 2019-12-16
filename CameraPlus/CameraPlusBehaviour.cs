@@ -435,10 +435,6 @@ namespace CameraPlus
 
             ThirdPersonPos = (transform.forward * Config.cam360ForwardOffset) + (transform.right * Config.cam360RightOffset);
             ThirdPersonPos = new Vector3(ThirdPersonPos.x, Config.cam360UpOffset, ThirdPersonPos.z);
-
-
-
-
         }
 
         protected void AddMovementScript()
@@ -472,9 +468,7 @@ namespace CameraPlus
             _mainCamera = Camera.main;
         }
 
-        protected IEnumerator Get360Managers()
-        {
-
+        protected IEnumerator Get360Managers() {
             yield return new WaitForSeconds(0.5f);
 
             _beatLineManager = null;
@@ -489,23 +483,12 @@ namespace CameraPlus
                 _environmentSpawnRotation = Resources.FindObjectsOfTypeAll<EnvironmentSpawnRotation>().First();
             }
 
-
-
-            //Logger.Log("found beatlinemanager: " + (_beatLineManager != null).ToString(), LogLevel.Debug);
-
             if (_beatLineManager)
             {
                 this._yAngle = _beatLineManager.midRotation;
                 ThirdPersonRot = new Vector3(0.0f, _yAngle, 0.0f);
             }
 
-
-
-        }
-
-        private void LaneRotateEvent(Quaternion newRot)
-        {
-            //ThirdPersonRot = newRot.eulerAngles;
         }
 
         internal virtual void SetFOV()
