@@ -102,13 +102,29 @@ namespace CameraPlus
                     {
                         layoutMode = true;
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 105, 120, 30), new GUIContent(parentBehaviour.Config.thirdPerson ? " First Person" : "Third Person")))
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 105, 120, 30), 
+                        new GUIContent(parentBehaviour.Config.use360Camera? "First Person" : parentBehaviour.Config.thirdPerson ? " 360 Third Person" : "Third Person" )))
                     {
-                        parentBehaviour.Config.thirdPerson = !parentBehaviour.Config.thirdPerson;
-                        parentBehaviour.ThirdPerson = parentBehaviour.Config.thirdPerson;
-                        parentBehaviour.ThirdPersonPos = parentBehaviour.Config.Position;
-                        parentBehaviour.ThirdPersonRot = parentBehaviour.Config.Rotation;
-                        //FirstPersonOffset = Config.FirstPersonPositionOffset;
+                        if(parentBehaviour.Config.use360Camera)
+                        {
+                            parentBehaviour.Config.thirdPerson = !parentBehaviour.Config.thirdPerson;
+                            parentBehaviour.ThirdPerson = parentBehaviour.Config.thirdPerson;
+                            parentBehaviour.ThirdPersonPos = parentBehaviour.Config.Position;
+                            parentBehaviour.ThirdPersonRot = parentBehaviour.Config.Rotation;
+                            parentBehaviour.Config.use360Camera = false;
+                        }
+                        else if(parentBehaviour.Config.thirdPerson)
+                        {
+                            parentBehaviour.Config.use360Camera = true;
+                        }
+                        else
+                        {
+                            parentBehaviour.Config.thirdPerson = !parentBehaviour.Config.thirdPerson;
+                            parentBehaviour.ThirdPerson = parentBehaviour.Config.thirdPerson;
+                            parentBehaviour.ThirdPersonPos = parentBehaviour.Config.Position;
+                            parentBehaviour.ThirdPersonRot = parentBehaviour.Config.Rotation;
+                        }
+                        //      FirstPersonOffset = Config.FirstPersonPositionOffset;
                         //     FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.CloseContextMenu();

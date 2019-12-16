@@ -486,7 +486,6 @@ namespace CameraPlus
             if (_beatLineManager)
             {
                 this._yAngle = _beatLineManager.midRotation;
-                ThirdPersonRot = new Vector3(0.0f, _yAngle, 0.0f);
             }
 
         }
