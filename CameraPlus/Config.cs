@@ -12,9 +12,11 @@ namespace CameraPlus
         public float renderScale = 1;
         public float positionSmooth = 10;
         public float rotationSmooth = 5;
+        public float cam360Smoothness = 2;
 
         public bool thirdPerson = false;
         public bool showThirdPersonCamera = true;
+        public bool use360Camera = false;
 
         public float posx;
         public float posy = 2;
@@ -31,6 +33,12 @@ namespace CameraPlus
         public float firstPersonRotOffsetX;
         public float firstPersonRotOffsetY;
         public float firstPersonRotOffsetZ;
+
+        public float cam360ForwardOffset = -2f;
+        public float cam360XTilt = 10f;
+        public float cam360ZTilt = 0f;
+        public float cam360UpOffset = 2.2f;
+        public float cam360RightOffset = 0f;
 
         public int screenWidth = Screen.width;
         public int screenHeight = Screen.height;
@@ -50,104 +58,80 @@ namespace CameraPlus
         private readonly FileSystemWatcher _configWatcher;
         private bool _saving;
 
-        public Vector2 ScreenPosition
-        {
-            get
-            {
+        public Vector2 ScreenPosition {
+            get {
                 return new Vector2(screenPosX, screenPosY);
             }
         }
 
-        public Vector2 ScreenSize
-        {
-            get
-            {
+        public Vector2 ScreenSize {
+            get {
                 return new Vector2(screenWidth, screenHeight);
             }
         }
 
-        public Vector3 Position
-        {
-            get
-            {
+        public Vector3 Position {
+            get {
                 return new Vector3(posx, posy, posz);
             }
-            set
-            {
+            set {
                 posx = value.x;
                 posy = value.y;
                 posz = value.z;
             }
         }
 
-        public Vector3 DefaultPosition
-        {
-            get
-            {
+        public Vector3 DefaultPosition {
+            get {
                 return new Vector3(0f, 2f, -1.2f);
             }
         }
 
-        public Vector3 Rotation
-        {
-            get
-            {
+        public Vector3 Rotation {
+            get {
                 return new Vector3(angx, angy, angz);
             }
-            set
-            {
+            set {
                 angx = value.x;
                 angy = value.y;
                 angz = value.z;
             }
         }
 
-        public Vector3 DefaultRotation
-        {
-            get
-            {
+        public Vector3 DefaultRotation {
+            get {
                 return new Vector3(15f, 0f, 0f);
             }
         }
 
-        public Vector3 FirstPersonPositionOffset
-        {
-            get
-            {
+        public Vector3 FirstPersonPositionOffset {
+            get {
                 return new Vector3(firstPersonPosOffsetX, firstPersonPosOffsetY, firstPersonPosOffsetZ);
             }
-            set
-            {
+            set {
                 firstPersonPosOffsetX = value.x;
                 firstPersonPosOffsetY = value.y;
                 firstPersonPosOffsetZ = value.z;
             }
         }
-        public Vector3 FirstPersonRotationOffset
-        {
-            get
-            {
+        public Vector3 FirstPersonRotationOffset {
+            get {
                 return new Vector3(firstPersonRotOffsetX, firstPersonRotOffsetY, firstPersonRotOffsetZ);
             }
-            set
-            {
+            set {
                 firstPersonRotOffsetX = value.x;
                 firstPersonRotOffsetY = value.y;
                 firstPersonRotOffsetZ = value.z;
             }
         }
 
-        public Vector3 DefaultFirstPersonPositionOffset
-        {
-            get
-            {
+        public Vector3 DefaultFirstPersonPositionOffset {
+            get {
                 return new Vector3(0, 0, 0);
             }
         }
-        public Vector3 DefaultFirstPersonRotationOffset
-        {
-            get
-            {
+        public Vector3 DefaultFirstPersonRotationOffset {
+            get {
                 return new Vector3(0, 0, 0);
             }
         }
