@@ -24,17 +24,15 @@ namespace CameraPlus
             DiagonalLeft,
             DiagonalRight
         }
-        
+
         protected readonly WaitUntil _waitForMainCamera = new WaitUntil(() => Camera.main);
         private readonly WaitForSecondsRealtime _waitForSecondsRealtime = new WaitForSecondsRealtime(1f);
         protected const int OnlyInThirdPerson = 3;
         protected const int OnlyInFirstPerson = 4;
 
-        public bool ThirdPerson
-        {
+        public bool ThirdPerson {
             get { return _thirdPerson; }
-            set
-            {
+            set {
                 _thirdPerson = value;
                 _cameraCube.gameObject.SetActive(_thirdPerson && Config.showThirdPersonCamera);
                 _cameraPreviewQuad.gameObject.SetActive(_thirdPerson && Config.showThirdPersonCamera);
@@ -68,6 +66,8 @@ namespace CameraPlus
         protected GameObject _cameraCubeGO;
         protected GameObject _quad;
         protected CameraMovement _cameraMovement = null;
+        protected BeatLineManager _beatLineManager;
+        protected EnvironmentSpawnRotation _environmentSpawnRotation;
 
         protected int _prevScreenWidth;
         protected int _prevScreenHeight;
@@ -77,6 +77,7 @@ namespace CameraPlus
         protected int _prevScreenPosX, _prevScreenPosY;
         protected bool _prevFitToCanvas;
         protected float _aspectRatio;
+        protected float _yAngle;
 
         protected bool _wasWindowActive = false;
         protected bool _mouseHeld = false;
@@ -99,7 +100,7 @@ namespace CameraPlus
         public static bool wasWithinBorder = false;
         public static bool anyInstanceBusy = false;
         private static bool _contextMenuEnabled = true;
-        
+
         public virtual void Init(Config config)
         {
             DontDestroyOnLoad(gameObject);
@@ -111,14 +112,14 @@ namespace CameraPlus
 
             StartCoroutine(DelayedInit());
         }
-     
+
         protected IEnumerator DelayedInit()
         {
             yield return _waitForMainCamera;
 
             _mainCamera = Camera.main;
             //      _menuStrip = null;
-            if(_contextMenu == null)
+            if (_contextMenu == null)
             {
                 MenuObj = new GameObject("CameraPlusMenu");
                 _contextMenu = MenuObj.AddComponent<ContextMenu>();
@@ -128,15 +129,15 @@ namespace CameraPlus
             Config.ConfigChangedEvent += PluginOnConfigChangedEvent;
 
             var gameObj = Instantiate(_mainCamera.gameObject);
-            
+
             gameObj.SetActive(false);
             gameObj.name = "Camera Plus";
             gameObj.tag = "Untagged";
             while (gameObj.transform.childCount > 0) DestroyImmediate(gameObj.transform.GetChild(0).gameObject);
-            DestroyImmediate(gameObj.GetComponent("CameraRenderCallbacksManager"));
+            DestroyImmediate(gameObj.GetComponent(typeof(CameraRenderCallbacksManager)));
             DestroyImmediate(gameObj.GetComponent("AudioListener"));
             DestroyImmediate(gameObj.GetComponent("MeshCollider"));
-            
+
             _cam = gameObj.GetComponent<Camera>();
             _cam.stereoTargetEye = StereoTargetEyeMask.None;
             _cam.enabled = true;
@@ -178,7 +179,7 @@ namespace CameraPlus
             _quad.transform.localEulerAngles = new Vector3(0, 180, 0);
             _quad.transform.localScale = new Vector3(_cam.aspect, 1, 1);
             _cameraPreviewQuad = _quad;
-            
+
             ReadConfig();
 
             if (ThirdPerson)
@@ -203,12 +204,12 @@ namespace CameraPlus
 
             Plugin.Instance.ActiveSceneChanged += SceneManager_activeSceneChanged;
 
-      //      FirstPersonOffset = Config.FirstPersonPositionOffset;
-     //       FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
+            //      FirstPersonOffset = Config.FirstPersonPositionOffset;
+            //       FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
             SceneManager_activeSceneChanged(new Scene(), new Scene());
             Logger.Log($"Camera \"{Path.GetFileName(Config.FilePath)}\" successfully initialized!");
         }
-        
+
         protected virtual void OnDestroy()
         {
             Config.ConfigChangedEvent -= PluginOnConfigChangedEvent;
@@ -247,8 +248,8 @@ namespace CameraPlus
             {
                 ThirdPersonPos = Config.Position;
                 ThirdPersonRot = Config.Rotation;
-          //      FirstPersonOffset = Config.FirstPersonPositionOffset;
-          //      FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
+                //      FirstPersonOffset = Config.FirstPersonPositionOffset;
+                //      FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
             }
 
             SetCullingMask();
@@ -286,7 +287,7 @@ namespace CameraPlus
                     return;
                 }
 
-                if(Config.fitToCanvas)
+                if (Config.fitToCanvas)
                 {
                     Config.screenPosX = 0;
                     Config.screenPosY = 0;
@@ -318,12 +319,13 @@ namespace CameraPlus
                 _prevScreenPosY = Config.screenPosY;
             });
         }
-        
+
         public virtual void SceneManager_activeSceneChanged(Scene from, Scene to)
         {
             StartCoroutine(GetMainCamera());
+            StartCoroutine(Get360Managers());
             var vrPointers = to.name == "GameCore" ? Resources.FindObjectsOfTypeAll<VRPointer>() : Resources.FindObjectsOfTypeAll<VRPointer>();
-            if(vrPointers.Count() == 0)
+            if (vrPointers.Count() == 0)
             {
                 Logger.Log("Failed to get VRPointer!", LogLevel.Warning);
                 return;
@@ -340,8 +342,8 @@ namespace CameraPlus
 
         protected void OnApplicationFocus(bool hasFocus)
         {
-      //      if(!hasFocus && GetActiveWindow() == IntPtr.Zero)
-       //         CloseContextMenu();
+            //      if(!hasFocus && GetActiveWindow() == IntPtr.Zero)
+            //         CloseContextMenu();
         }
 
         protected virtual void Update()
@@ -356,8 +358,8 @@ namespace CameraPlus
                     {
                         transform.position = _mainCamera.transform.position;
                         transform.rotation = _mainCamera.transform.rotation;
-              //          FirstPersonOffset = Config.FirstPersonPositionOffset;
-            //            FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
+                        //          FirstPersonOffset = Config.FirstPersonPositionOffset;
+                        //            FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
                     }
                     else
                     {
@@ -380,29 +382,59 @@ namespace CameraPlus
 
                 if (ThirdPerson)
                 {
+
+                    HandleThirdPerson360();
                     transform.position = ThirdPersonPos;
                     transform.eulerAngles = ThirdPersonRot;
                     _cameraCube.position = ThirdPersonPos;
                     _cameraCube.eulerAngles = ThirdPersonRot;
                     return;
                 }
-           //     Console.WriteLine(Config.FirstPersonPositionOffset.ToString());
+                //     Console.WriteLine(Config.FirstPersonPositionOffset.ToString());
                 transform.position = Vector3.Lerp(transform.position, camera.position + Config.FirstPersonPositionOffset,
                     Config.positionSmooth * Time.unscaledDeltaTime);
 
-             if(!Config.forceFirstPersonUpRight)
-                transform.rotation = Quaternion.Slerp(transform.rotation, camera.rotation * Quaternion.Euler(Config.FirstPersonRotationOffset),
-                    Config.rotationSmooth * Time.unscaledDeltaTime);
-             else
+                if (!Config.forceFirstPersonUpRight)
+                    transform.rotation = Quaternion.Slerp(transform.rotation, camera.rotation * Quaternion.Euler(Config.FirstPersonRotationOffset),
+                        Config.rotationSmooth * Time.unscaledDeltaTime);
+                else
 
                 {
                     Quaternion rot = Quaternion.Slerp(transform.rotation, camera.rotation * Quaternion.Euler(Config.FirstPersonRotationOffset),
                         Config.rotationSmooth * Time.unscaledDeltaTime);
-                    transform.rotation = rot * Quaternion.Euler(0, 0, -(rot.eulerAngles.z) );
+                    transform.rotation = rot * Quaternion.Euler(0, 0, -(rot.eulerAngles.z));
                 }
-                    
+
             }
             catch { }
+        }
+
+        private void HandleThirdPerson360()
+        {
+
+            if (!_beatLineManager || !Config.use360Camera) return;
+
+            float b;
+            if (_beatLineManager.isMidRotationValid)
+            {
+                double midRotation = (double)this._beatLineManager.midRotation;
+                float num1 = Mathf.DeltaAngle((float)midRotation, this._environmentSpawnRotation.targetRotation);
+                float num2 = (float)(-(double)this._beatLineManager.rotationRange * 0.5);
+                float num3 = this._beatLineManager.rotationRange * 0.5f;
+                if ((double)num1 > (double)num3)
+                    num3 = num1;
+                else if ((double)num1 < (double)num2)
+                    num2 = num1;
+                b = (float)(midRotation + ((double)num2 + (double)num3) * 0.5);
+            }
+            else
+                b = this._environmentSpawnRotation.targetRotation;
+
+            _yAngle = Mathf.Lerp(_yAngle, b, Mathf.Clamp(Time.deltaTime * Config.cam360Smoothness, 0f, 1f));
+            ThirdPersonRot = new Vector3(Config.cam360XTilt, _yAngle, Config.cam360ZTilt);
+
+            ThirdPersonPos = (transform.forward * Config.cam360ForwardOffset) + (transform.right * Config.cam360RightOffset);
+            ThirdPersonPos = new Vector3(ThirdPersonPos.x, Config.cam360UpOffset, ThirdPersonPos.z);
         }
 
         protected void AddMovementScript()
@@ -436,6 +468,29 @@ namespace CameraPlus
             _mainCamera = Camera.main;
         }
 
+        protected IEnumerator Get360Managers() {
+            yield return new WaitForSeconds(0.5f);
+
+            _beatLineManager = null;
+            _environmentSpawnRotation = null;
+
+            var testList = Resources.FindObjectsOfTypeAll<BeatLineManager>();
+
+            if (testList.Length > 0)
+            {
+                _beatLineManager = testList.First();
+
+                _environmentSpawnRotation = Resources.FindObjectsOfTypeAll<EnvironmentSpawnRotation>().First();
+            }
+
+            if (_beatLineManager)
+            {
+                this._yAngle = _beatLineManager.midRotation;
+                ThirdPersonRot = new Vector3(0.0f, _yAngle, 0.0f);
+            }
+
+        }
+
         internal virtual void SetFOV()
         {
             if (_cam == null) return;
@@ -444,7 +499,7 @@ namespace CameraPlus
 
         internal virtual void SetCullingMask()
         {
-            if(Config.transparentWalls)
+            if (Config.transparentWalls)
                 _cam.cullingMask &= ~(1 << TransparentWallsPatch.WallLayerMask);
             else
                 _cam.cullingMask |= (1 << TransparentWallsPatch.WallLayerMask);
@@ -471,13 +526,13 @@ namespace CameraPlus
                     return false;
                 }
 
-                if (c.Config.layer == Config.layer && 
+                if (c.Config.layer == Config.layer &&
                     c.Instance._lastRenderUpdate > _lastRenderUpdate)
                 {
                     return false;
                 }
 
-                if (c.Instance._mouseHeld && (c.Instance._isMoving || 
+                if (c.Instance._mouseHeld && (c.Instance._isMoving ||
                     c.Instance._isResizing || c.Instance._contextMenuOpen))
                 {
                     return false;
@@ -517,7 +572,7 @@ namespace CameraPlus
             */
             _contextMenuOpen = false;
         }
-        
+
         public static void SetCursor(CursorType type)
         {
             if (type != currentCursor)
@@ -538,7 +593,7 @@ namespace CameraPlus
                         texture = Utils.LoadTextureFromResources("CameraPlus.Resources.Resize_DiagLeft.png");
                         break;
                 }
-                UnityEngine.Cursor.SetCursor(texture, texture ? new Vector2(texture.width / 2, texture.height / 2) : new Vector2(0,0), CursorMode.Auto);
+                UnityEngine.Cursor.SetCursor(texture, texture ? new Vector2(texture.width / 2, texture.height / 2) : new Vector2(0, 0), CursorMode.Auto);
                 currentCursor = type;
             }
         }
@@ -555,7 +610,7 @@ namespace CameraPlus
             {
                 if (/*_menuStrip != null &&*/ mousePos.x > 0 && mousePos.x < Screen.width && mousePos.y > 0 && mousePos.y < Screen.height)
                 {
-          //          CloseContextMenu();
+                    //          CloseContextMenu();
                 }
             }
 
@@ -611,7 +666,7 @@ namespace CameraPlus
                 {
                     _initialOffset.x = currentMouseOffsetX;
                     _initialOffset.y = currentMouseOffsetY;
-                    
+
                     _lastScreenPos = Config.ScreenPosition;
                     _lastGrabPos = new Vector2(mousePos.x, mousePos.y);
 
@@ -649,20 +704,20 @@ namespace CameraPlus
                 Config.screenHeight = Mathf.Clamp(Config.screenHeight, 100, Screen.height);
                 Config.screenPosX = Mathf.Clamp(Config.screenPosX, 0, Screen.width - Config.screenWidth);
                 Config.screenPosY = Mathf.Clamp(Config.screenPosY, 0, Screen.height - Config.screenHeight);
-                
+
                 CreateScreenRenderTexture();
             }
             else if (holdingRightClick && _contextMenuEnabled)
             {
                 if (_mouseHeld) return;
-         //       if (_menuStrip == null)
-          //      {
-                    DisplayContextMenu();
-                    _contextMenuOpen = true;
-         //       }
-         //       _menuStrip.SetBounds(Cursor.Position.X, Cursor.Position.Y, 0, 0);
-         //       if (!_menuStrip.Visible)
-         //           _menuStrip.Show();
+                //       if (_menuStrip == null)
+                //      {
+                DisplayContextMenu();
+                _contextMenuOpen = true;
+                //       }
+                //       _menuStrip.SetBounds(Cursor.Position.X, Cursor.Position.Y, 0, 0);
+                //       if (!_menuStrip.Visible)
+                //           _menuStrip.Show();
                 anyInstanceBusy = true;
                 _mouseHeld = true;
             }
