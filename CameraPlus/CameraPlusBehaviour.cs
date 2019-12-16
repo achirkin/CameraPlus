@@ -431,7 +431,10 @@ namespace CameraPlus
                 b = this._environmentSpawnRotation.targetRotation;
 
             _yAngle = Mathf.Lerp(_yAngle, b, Mathf.Clamp(Time.deltaTime * Config.cam360Smoothness, 0f, 1f));
-            ThirdPersonRot = new Vector3(Config.cam360XTilt, _yAngle, Config.cam360ZTilt);
+
+ 
+
+            ThirdPersonRot = new Vector3(Config.cam360XTilt, _yAngle + Config.cam360YTilt, Config.cam360ZTilt);
 
             ThirdPersonPos = (transform.forward * Config.cam360ForwardOffset) + (transform.right * Config.cam360RightOffset);
             ThirdPersonPos = new Vector3(ThirdPersonPos.x, Config.cam360UpOffset, ThirdPersonPos.z);

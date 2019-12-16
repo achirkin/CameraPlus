@@ -37,6 +37,7 @@ namespace CameraPlus
         public float cam360ForwardOffset = -2f;
         public float cam360XTilt = 10f;
         public float cam360ZTilt = 0f;
+        public float cam360YTilt = 0f;
         public float cam360UpOffset = 2.2f;
         public float cam360RightOffset = 0f;
 

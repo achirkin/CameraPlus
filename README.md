@@ -25,15 +25,17 @@ Press <kbd>F1</kbd> to toggle the main camera between first and third person.
 After you run the game once, a `cameraplus.cfg` file is created within the folder Beat Saber\UserData\CameraPlus. Any cfg files located in this folder will be used to render additional cameras.
 Edit that file to configure CameraPlus:
 
-| Parameter             | Description                                                                                  |
-|-----------------------|----------------------------------------------------------------------------------------------|
+| Parameter                   | Description                                                                                  |
+|-----------------------------|----------------------------------------------------------------------------------------------|
 | **fov**                     | Horizontal field of view of the camera                                                       |
 | **antiAliasing**            | Anti-aliasing setting for the camera (1, 2, 4 or 8 only)                                     |
 | **renderScale**             | The resolution scale of the camera relative to game window (similar to supersampling for VR) |
 | **positionSmooth**          | How much position should smooth **(SMALLER NUMBER = SMOOTHER)**                              |
 | **rotationSmooth**          | How much rotation should smooth **(SMALLER NUMBER = SMOOTHER)**                              |
+| **cam360Smoothness**        | How smoothly the 360 cam snaps to lane changes **(SMALLER NUMBER = SMOOTHER)**               |
 | **thirdPerson**             | Whether third person camera is enabled                                                       |
 | **showThirdPersonCamera**   | Whether or not the third person camera is visible                                            |
+| **use360Camera**            | Whether the 360 camera is used                                                               |
 | **posx**                    | X position of third person camera                                                            |
 | **posy**                    | Y position of third person camera                                                            |
 | **posz**                    | Z position of third person camera                                                            |
@@ -46,6 +48,12 @@ Edit that file to configure CameraPlus:
 | **firstPersonRotOffsetX**   | X rotation offset of first person camera                                                     |
 | **firstPersonRotOffsetY**   | Y rotation offset of first person camera                                                     |
 | **firstPersonRotOffsetZ**   | Z rotation offset of first person camera                                                     |
+| **cam360ForwardOffset**     | 360 camera position offset forwards                                                          |
+| **cam360UpOffset**          | 360 camera position offset upwards                                                           |
+| **cam360RightOffset**       | 360 camera position offset to the right                                                      |
+| **cam360XTilt**             | X tilt rotation relative to the forward of 360 camera                                        |
+| **cam360ZTilt**             | Z tilt rotation relative to the forward of 360 camera                                        |
+| **cam360YTilt**             | The Y tilt rotation OFFSET on the 360 camera                                                 |
 | **screenWidth**             | Width of the camera render area                                                              |
 | **screenHeight**            | Height of the camera render area                                                             |
 | **screenPosX**              | X position of the camera in the Beat Saber window                                            |
