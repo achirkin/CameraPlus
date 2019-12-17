@@ -412,7 +412,7 @@ namespace CameraPlus
         private void HandleThirdPerson360()
         {
 
-            if (!_beatLineManager || !Config.use360Camera) return;
+            if (!_beatLineManager || !Config.use360Camera || !_environmentSpawnRotation) return;
 
             float b;
             if (_beatLineManager.isMidRotationValid)
@@ -481,9 +481,9 @@ namespace CameraPlus
 
             if (testList.Length > 0)
             {
-                _beatLineManager = testList.First();
+                _beatLineManager = testList.FirstOrDefault();
 
-                _environmentSpawnRotation = Resources.FindObjectsOfTypeAll<EnvironmentSpawnRotation>().First();
+                _environmentSpawnRotation = Resources.FindObjectsOfTypeAll<EnvironmentSpawnRotation>().FirstOrDefault();
             }
 
             if (_beatLineManager)
