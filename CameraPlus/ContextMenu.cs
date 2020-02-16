@@ -152,6 +152,13 @@ namespace CameraPlus
                         parentBehaviour.CloseContextMenu();
                         parentBehaviour.Config.Save();
                     }
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 225, 120, 30), new GUIContent(parentBehaviour.Config.avatar ? "Hide Avatar" : "Show Avatar")))
+                    {
+                        parentBehaviour.Config.avatar = !parentBehaviour.Config.avatar;
+                        parentBehaviour.SetCullingMask();
+                        parentBehaviour.CloseContextMenu();
+                        parentBehaviour.Config.Save();
+                    }
                     if (GUI.Button(new Rect(menuPos.x, menuPos.y + 355, 300, 30), new GUIContent("Close Menu")))
                     {
                         parentBehaviour.CloseContextMenu();

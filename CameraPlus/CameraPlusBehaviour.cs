@@ -505,6 +505,10 @@ namespace CameraPlus
                 _cam.cullingMask &= ~(1 << TransparentWallsPatch.WallLayerMask);
             else
                 _cam.cullingMask |= (1 << TransparentWallsPatch.WallLayerMask);
+            if (Config.avatar)
+                _cam.cullingMask |= (1 << DisplayAvatarPatch.AvatarLayerMask);
+            else
+                _cam.cullingMask &= ~(1 << DisplayAvatarPatch.AvatarLayerMask);
         }
 
         public bool IsWithinRenderArea(Vector2 mousePos, Config c)

@@ -1,0 +1,20 @@
+﻿using Harmony;
+using UnityEngine;
+
+namespace CameraPlus
+{
+    [HarmonyPatch(typeof(ObstacleController))]
+    [HarmonyPatch("Init", MethodType.Normal)]
+    public class DisplayAvatarPatch
+    {
+        public static int AvatarLayerMask = 3;
+        private static void Postfix(ref ObstacleController __instance)
+        {
+            Renderer mesh = __instance.gameObject?.GetComponentInChildren<Renderer>(false);
+            if (mesh?.gameObject)
+            {
+                mesh.gameObject.layer = AvatarLayerMask;
+            }
+        }
+    }
+}
