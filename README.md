@@ -62,7 +62,7 @@ Edit that file to configure CameraPlus:
 | **fitToCanvas**             | Force camera to stretch to fit window                                                        |
 | **transparentWalls**        | Make Walls appear transparent on the camera                                                  |
 | **forceFirstPersonUpRight** | Lock rotation of first person camera on Z axis to keep the camera upright
-| **Avatar                    | Switch avatar display layer
+| **Avatar**                  | Switch avatar display layer
 | **movementScriptPath**      | Full path to the movement script file to associate with the camera                           |
 
 If you need help, ask us at the Beat Saber Mod Group Discord Server:  
