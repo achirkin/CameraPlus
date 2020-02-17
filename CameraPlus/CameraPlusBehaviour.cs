@@ -506,9 +506,21 @@ namespace CameraPlus
             else
                 _cam.cullingMask |= (1 << TransparentWallsPatch.WallLayerMask);
             if (Config.avatar)
-                _cam.cullingMask |= (1 << DisplayAvatarPatch.AvatarLayerMask);
+            {
+                if(Config.thirdPerson || Config.use360Camera)
+                    _cam.cullingMask |= (1 << DisplayAvatarPatch.OnlyInThirdPerson);
+                else
+                    _cam.cullingMask |= (1 << DisplayAvatarPatch.OnlyInFirstPerson);
+                _cam.cullingMask |= (1 << DisplayAvatarPatch.AlwaysVisible);
+            }
             else
-                _cam.cullingMask &= ~(1 << DisplayAvatarPatch.AvatarLayerMask);
+            {
+                if(Config.thirdPerson || Config.use360Camera)
+                    _cam.cullingMask &= ~(1 << DisplayAvatarPatch.OnlyInThirdPerson);
+                else
+                    _cam.cullingMask &= ~(1 << DisplayAvatarPatch.OnlyInFirstPerson);
+                _cam.cullingMask &= ~(1 << DisplayAvatarPatch.AlwaysVisible);
+            }
         }
 
         public bool IsWithinRenderArea(Vector2 mousePos, Config c)

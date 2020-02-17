@@ -119,7 +119,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(TargetDir)$(TargetFileName)" "C:\Program Files (x86)\Steam\steamapps\common\Beat Saber\Plugins"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>REM "$(ProjectDir)..\..\PluginVersionSetter.exe" "$(ProjectDir)Properties\AssemblyInfo.cs" "$(ProjectDir)Plugin.cs"</PreBuildEvent>
