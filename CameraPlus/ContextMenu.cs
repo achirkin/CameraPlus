@@ -152,7 +152,7 @@ namespace CameraPlus
                         parentBehaviour.CloseContextMenu();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 225, 120, 30), new GUIContent(parentBehaviour.Config.avatar ? "Hide Avatar" : "Show Avatar")))
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 185, 120, 30), new GUIContent(parentBehaviour.Config.avatar ? "Hide Avatar" : "Show Avatar")))
                     {
                         parentBehaviour.Config.avatar = !parentBehaviour.Config.avatar;
                         parentBehaviour.SetCullingMask();
@@ -163,7 +163,7 @@ namespace CameraPlus
                     {
                         parentBehaviour.CloseContextMenu();
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 185, 300, 30), new GUIContent("Spawn 38 Cameras")))
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 225, 300, 30), new GUIContent("Spawn 38 Cameras")))
                     {
                         parentBehaviour.StartCoroutine(CameraUtilities.Spawn38Cameras());
                         parentBehaviour.CloseContextMenu();
