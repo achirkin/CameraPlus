@@ -134,7 +134,7 @@ namespace CameraPlus
             gameObj.name = "Camera Plus";
             gameObj.tag = "Untagged";
             while (gameObj.transform.childCount > 0) DestroyImmediate(gameObj.transform.GetChild(0).gameObject);
-            DestroyImmediate(gameObj.GetComponent(typeof(CameraRenderCallbacksManager)));
+            //DestroyImmediate(gameObj.GetComponent(typeof(CameraRenderCallbacksManager)));
             DestroyImmediate(gameObj.GetComponent("AudioListener"));
             DestroyImmediate(gameObj.GetComponent("MeshCollider"));
 
