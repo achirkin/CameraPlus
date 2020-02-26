@@ -9,7 +9,7 @@ namespace CameraPlus
 {
     public class ContextMenu : MonoBehaviour
     {
-        internal Vector2 menuPos
+        internal Vector2 MenuPos
         {
             get
             {
@@ -58,12 +58,12 @@ namespace CameraPlus
                 Matrix4x4 originalMatrix = GUI.matrix;
                 GUI.matrix = Matrix4x4.TRS(new Vector3(0, 0, 0), Quaternion.identity, scale);
                 //Layer boxes for Opacity
-                GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 400), "CameraPlus");
-                GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 400), "CameraPlus");
-                GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 400), "CameraPlus");
+                GUI.Box(new Rect(MenuPos.x - 5, MenuPos.y, 310, 400), "CameraPlus");
+                GUI.Box(new Rect(MenuPos.x - 5, MenuPos.y, 310, 400), "CameraPlus");
+                GUI.Box(new Rect(MenuPos.x - 5, MenuPos.y, 310, 400), "CameraPlus");
                 if (!layoutMode)
                 {
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 25, 120, 30), new GUIContent("Add New Camera")))
+                    if (GUI.Button(new Rect(MenuPos.x, MenuPos.y + 25, 120, 30), new GUIContent("Add New Camera")))
                     {
                         lock (Plugin.Instance.Cameras)
                         {
@@ -74,7 +74,7 @@ namespace CameraPlus
                             parentBehaviour.CloseContextMenu();
                         }
                     }
-                    if (GUI.Button(new Rect(menuPos.x + 130, menuPos.y + 25, 170, 30), new GUIContent("Remove Selected Camera")))
+                    if (GUI.Button(new Rect(MenuPos.x + 130, MenuPos.y + 25, 170, 30), new GUIContent("Remove Selected Camera")))
                     {
                         lock (Plugin.Instance.Cameras)
                         {
@@ -87,7 +87,7 @@ namespace CameraPlus
                             }
                         }
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 65, 170, 30), new GUIContent("Duplicate Selected Camera")))
+                    if (GUI.Button(new Rect(MenuPos.x, MenuPos.y + 65, 170, 30), new GUIContent("Duplicate Selected Camera")))
                     {
                         lock (Plugin.Instance.Cameras)
                         {
@@ -98,11 +98,11 @@ namespace CameraPlus
                             parentBehaviour.CloseContextMenu();
                         }
                     }
-                    if (GUI.Button(new Rect(menuPos.x + 180, menuPos.y + 65, 120, 30), new GUIContent("Layout")))
+                    if (GUI.Button(new Rect(MenuPos.x + 180, MenuPos.y + 65, 120, 30), new GUIContent("Layout")))
                     {
                         layoutMode = true;
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 105, 120, 30), 
+                    if (GUI.Button(new Rect(MenuPos.x, MenuPos.y + 105, 120, 30), 
                         new GUIContent(parentBehaviour.Config.use360Camera? "First Person" : parentBehaviour.Config.thirdPerson ? " 360 Third Person" : "Third Person" )))
                     {
                         if(parentBehaviour.Config.use360Camera)
@@ -130,7 +130,7 @@ namespace CameraPlus
                         parentBehaviour.CloseContextMenu();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x + 130, menuPos.y + 105, 170, 30), new GUIContent(parentBehaviour.Config.showThirdPersonCamera ? "Hide Third Person Camera" : "Show Third Person Camera")))
+                    if (GUI.Button(new Rect(MenuPos.x + 130, MenuPos.y + 105, 170, 30), new GUIContent(parentBehaviour.Config.showThirdPersonCamera ? "Hide Third Person Camera" : "Show Third Person Camera")))
                     {
 
                         parentBehaviour.Config.showThirdPersonCamera = !parentBehaviour.Config.showThirdPersonCamera;
@@ -138,32 +138,32 @@ namespace CameraPlus
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.CloseContextMenu();
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 145, 170, 30), new GUIContent(parentBehaviour.Config.forceFirstPersonUpRight ? "Don't Force Camera Upright" : "Force Camera Upright")))
+                    if (GUI.Button(new Rect(MenuPos.x, MenuPos.y + 145, 170, 30), new GUIContent(parentBehaviour.Config.forceFirstPersonUpRight ? "Don't Force Camera Upright" : "Force Camera Upright")))
                     {
 
                         parentBehaviour.Config.forceFirstPersonUpRight = !parentBehaviour.Config.forceFirstPersonUpRight;
                         parentBehaviour.Config.Save();
                         parentBehaviour.CloseContextMenu();
                     }
-                    if (GUI.Button(new Rect(menuPos.x + 180, menuPos.y + 145, 120, 30), new GUIContent(parentBehaviour.Config.transparentWalls ? "Solid Walls" : "Transparent Walls")))
+                    if (GUI.Button(new Rect(MenuPos.x + 180, MenuPos.y + 145, 120, 30), new GUIContent(parentBehaviour.Config.transparentWalls ? "Solid Walls" : "Transparent Walls")))
                     {
                         parentBehaviour.Config.transparentWalls = !parentBehaviour.Config.transparentWalls;
                         parentBehaviour.SetCullingMask();
                         parentBehaviour.CloseContextMenu();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 185, 120, 30), new GUIContent(parentBehaviour.Config.avatar ? "Hide Avatar" : "Show Avatar")))
+                    if (GUI.Button(new Rect(MenuPos.x, MenuPos.y + 185, 120, 30), new GUIContent(parentBehaviour.Config.avatar ? "Hide Avatar" : "Show Avatar")))
                     {
                         parentBehaviour.Config.avatar = !parentBehaviour.Config.avatar;
                         parentBehaviour.SetCullingMask();
                         parentBehaviour.CloseContextMenu();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 355, 300, 30), new GUIContent("Close Menu")))
+                    if (GUI.Button(new Rect(MenuPos.x, MenuPos.y + 355, 300, 30), new GUIContent("Close Menu")))
                     {
                         parentBehaviour.CloseContextMenu();
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 225, 300, 30), new GUIContent("Spawn 38 Cameras")))
+                    if (GUI.Button(new Rect(MenuPos.x, MenuPos.y + 225, 300, 30), new GUIContent("Spawn 38 Cameras")))
                     {
                         parentBehaviour.StartCoroutine(CameraUtilities.Spawn38Cameras());
                         parentBehaviour.CloseContextMenu();
@@ -171,7 +171,7 @@ namespace CameraPlus
                 }
                 else
                 {
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 25, 290, 30), new GUIContent("Reset Camera Position and Rotation")))
+                    if (GUI.Button(new Rect(MenuPos.x, MenuPos.y + 25, 290, 30), new GUIContent("Reset Camera Position and Rotation")))
                     {
 
                         parentBehaviour.Config.Position = parentBehaviour.Config.DefaultPosition;
@@ -184,29 +184,29 @@ namespace CameraPlus
                         parentBehaviour.CloseContextMenu();
                     }
                     //Layer
-                    GUI.Box(new Rect(menuPos.x, menuPos.y + 65, 290, 70), "Layer: " + parentBehaviour.Config.layer);
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 85, 140, 30), new GUIContent("-")))
+                    GUI.Box(new Rect(MenuPos.x, MenuPos.y + 65, 290, 70), "Layer: " + parentBehaviour.Config.layer);
+                    if (GUI.Button(new Rect(MenuPos.x, MenuPos.y + 85, 140, 30), new GUIContent("-")))
                     {
                         parentBehaviour.Config.layer--;
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x + 155, menuPos.y + 85, 140, 30), new GUIContent("+")))
+                    if (GUI.Button(new Rect(MenuPos.x + 155, MenuPos.y + 85, 140, 30), new GUIContent("+")))
                     {
                         parentBehaviour.Config.layer++;
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
                     //FOV
-                    GUI.Box(new Rect(menuPos.x, menuPos.y + 125, 290, 70), "FOV: " + parentBehaviour.Config.fov);
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 145, 140, 30), new GUIContent("-")))
+                    GUI.Box(new Rect(MenuPos.x, MenuPos.y + 125, 290, 70), "FOV: " + parentBehaviour.Config.fov);
+                    if (GUI.Button(new Rect(MenuPos.x, MenuPos.y + 145, 140, 30), new GUIContent("-")))
                     {
                         parentBehaviour.Config.fov--;
                         parentBehaviour.SetFOV();
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x + 155, menuPos.y + 145, 140, 30), new GUIContent("+")))
+                    if (GUI.Button(new Rect(MenuPos.x + 155, MenuPos.y + 145, 140, 30), new GUIContent("+")))
                     {
                         parentBehaviour.Config.fov++;
                         parentBehaviour.SetFOV();
@@ -214,26 +214,26 @@ namespace CameraPlus
                         parentBehaviour.Config.Save();
                     }
                     //Render Scale
-                    GUI.Box(new Rect(menuPos.x, menuPos.y + 185, 290, 70), "Render Scale: " + parentBehaviour.Config.renderScale.ToString("F1"));
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 205, 140, 30), new GUIContent("-")))
+                    GUI.Box(new Rect(MenuPos.x, MenuPos.y + 185, 290, 70), "Render Scale: " + parentBehaviour.Config.renderScale.ToString("F1"));
+                    if (GUI.Button(new Rect(MenuPos.x, MenuPos.y + 205, 140, 30), new GUIContent("-")))
                     {
                         parentBehaviour.Config.renderScale -= 0.1f;
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x + 155, menuPos.y + 205, 140, 30), new GUIContent("+")))
+                    if (GUI.Button(new Rect(MenuPos.x + 155, MenuPos.y + 205, 140, 30), new GUIContent("+")))
                     {
                         parentBehaviour.Config.renderScale += 0.1f;
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 255, 290, 30), new GUIContent(parentBehaviour.Config.fitToCanvas ? " Don't Fit To Canvas" : "Fit To Canvas")))
+                    if (GUI.Button(new Rect(MenuPos.x, MenuPos.y + 255, 290, 30), new GUIContent(parentBehaviour.Config.fitToCanvas ? " Don't Fit To Canvas" : "Fit To Canvas")))
                     {
                         parentBehaviour.Config.fitToCanvas = !parentBehaviour.Config.fitToCanvas;
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 305, 290, 30), new GUIContent("Close Layout Menu")))
+                    if (GUI.Button(new Rect(MenuPos.x, MenuPos.y + 305, 290, 30), new GUIContent("Close Layout Menu")))
                     {
                         layoutMode = false;
                     }
