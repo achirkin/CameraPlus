@@ -93,7 +93,6 @@
     <Compile Include="CameraUtilities.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="ContextMenu.cs" />
-    <Compile Include="DisplayAvatarPatch.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

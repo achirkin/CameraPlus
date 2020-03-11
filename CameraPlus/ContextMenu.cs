@@ -22,6 +22,8 @@ namespace CameraPlus
         internal Vector2 mousePosition;
         internal bool showMenu;
         internal bool layoutMode = false;
+        internal float amountMove = 0.1f;
+        internal float amountRot = 0.1f;
         internal CameraPlusBehaviour parentBehaviour;
         public void Awake()
         {
@@ -58,9 +60,9 @@ namespace CameraPlus
                 Matrix4x4 originalMatrix = GUI.matrix;
                 GUI.matrix = Matrix4x4.TRS(new Vector3(0, 0, 0), Quaternion.identity, scale);
                 //Layer boxes for Opacity
-                GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 400), "CameraPlus");
-                GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 400), "CameraPlus");
-                GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 400), "CameraPlus");
+                GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 470), "CameraPlus");
+                GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 470), "CameraPlus");
+                GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 470), "CameraPlus");
                 if (!layoutMode)
                 {
                     if (GUI.Button(new Rect(menuPos.x, menuPos.y + 25, 120, 30), new GUIContent("Add New Camera")))
@@ -159,7 +161,7 @@ namespace CameraPlus
                         parentBehaviour.CloseContextMenu();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 355, 300, 30), new GUIContent("Close Menu")))
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 430, 300, 30), new GUIContent("Close Menu")))
                     {
                         parentBehaviour.CloseContextMenu();
                     }
@@ -184,29 +186,29 @@ namespace CameraPlus
                         parentBehaviour.CloseContextMenu();
                     }
                     //Layer
-                    GUI.Box(new Rect(menuPos.x, menuPos.y + 65, 290, 70), "Layer: " + parentBehaviour.Config.layer);
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 85, 140, 30), new GUIContent("-")))
+                    GUI.Box(new Rect(menuPos.x, menuPos.y + 60, 140, 55), "Layer: " + parentBehaviour.Config.layer);
+                    if (GUI.Button(new Rect(menuPos.x+5, menuPos.y + 80, 60, 30), new GUIContent("-")))
                     {
                         parentBehaviour.Config.layer--;
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x + 155, menuPos.y + 85, 140, 30), new GUIContent("+")))
+                    if (GUI.Button(new Rect(menuPos.x + 75, menuPos.y + 80, 60, 30), new GUIContent("+")))
                     {
                         parentBehaviour.Config.layer++;
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
                     //FOV
-                    GUI.Box(new Rect(menuPos.x, menuPos.y + 125, 290, 70), "FOV: " + parentBehaviour.Config.fov);
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 145, 140, 30), new GUIContent("-")))
+                    GUI.Box(new Rect(menuPos.x+155, menuPos.y + 60, 140, 55), "FOV: " + parentBehaviour.Config.fov);
+                    if (GUI.Button(new Rect(menuPos.x+160, menuPos.y + 80, 60, 30), new GUIContent("-")))
                     {
                         parentBehaviour.Config.fov--;
                         parentBehaviour.SetFOV();
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x + 155, menuPos.y + 145, 140, 30), new GUIContent("+")))
+                    if (GUI.Button(new Rect(menuPos.x + 230, menuPos.y + 80, 60, 30), new GUIContent("+")))
                     {
                         parentBehaviour.Config.fov++;
                         parentBehaviour.SetFOV();
@@ -214,26 +216,222 @@ namespace CameraPlus
                         parentBehaviour.Config.Save();
                     }
                     //Render Scale
-                    GUI.Box(new Rect(menuPos.x, menuPos.y + 185, 290, 70), "Render Scale: " + parentBehaviour.Config.renderScale.ToString("F1"));
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 205, 140, 30), new GUIContent("-")))
+                    GUI.Box(new Rect(menuPos.x, menuPos.y + 120, 140, 55), "Render Scale: " + parentBehaviour.Config.renderScale.ToString("F1"));
+                    if (GUI.Button(new Rect(menuPos.x + 5, menuPos.y + 140, 60, 30), new GUIContent("-")))
                     {
                         parentBehaviour.Config.renderScale -= 0.1f;
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x + 155, menuPos.y + 205, 140, 30), new GUIContent("+")))
+                    if (GUI.Button(new Rect(menuPos.x + 75, menuPos.y + 140, 60, 30), new GUIContent("+")))
                     {
                         parentBehaviour.Config.renderScale += 0.1f;
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 255, 290, 30), new GUIContent(parentBehaviour.Config.fitToCanvas ? " Don't Fit To Canvas" : "Fit To Canvas")))
+                    //Fit Canvas
+                    if (GUI.Button(new Rect(menuPos.x + 155, menuPos.y + 140, 140, 30), new GUIContent(parentBehaviour.Config.fitToCanvas ? " Don't Fit To Canvas" : "Fit To Canvas")))
                     {
                         parentBehaviour.Config.fitToCanvas = !parentBehaviour.Config.fitToCanvas;
                         parentBehaviour.CreateScreenRenderTexture();
                         parentBehaviour.Config.Save();
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 305, 290, 30), new GUIContent("Close Layout Menu")))
+                    //Amount of Movemnet
+                    GUI.Box(new Rect(menuPos.x, menuPos.y + 180, 210, 55), "Amount movement : " + amountMove.ToString("F2"));
+                    if (GUI.Button(new Rect(menuPos.x + 5, menuPos.y + 200, 60, 30), new GUIContent("0.01")))
+                    {
+                        amountMove = 0.01f;
+                        parentBehaviour.CreateScreenRenderTexture();
+                    }
+                    if (GUI.Button(new Rect(menuPos.x + 75, menuPos.y + 200, 60, 30), new GUIContent("0.10")))
+                    {
+                        amountMove = 0.1f;
+                        parentBehaviour.CreateScreenRenderTexture();
+                    }
+                    if (GUI.Button(new Rect(menuPos.x + 145, menuPos.y + 200, 60, 30), new GUIContent("1.00")))
+                    {
+                        amountMove = 1.0f;
+                        parentBehaviour.CreateScreenRenderTexture();
+                    }
+                    //X Position
+                    GUI.Box(new Rect(menuPos.x, menuPos.y + 240, 95, 55), "X Pos :" + 
+                        (parentBehaviour.Config.use360Camera ? parentBehaviour.Config.cam360RightOffset.ToString("F2") : (parentBehaviour.Config.thirdPerson ? parentBehaviour.Config.posx.ToString("F2") : parentBehaviour.Config.firstPersonPosOffsetX.ToString("F2"))));
+                    if (GUI.Button(new Rect(menuPos.x + 5, menuPos.y + 260, 40, 30), new GUIContent("-")))
+                    {
+                        if(parentBehaviour.Config.use360Camera)
+                            parentBehaviour.Config.cam360RightOffset -= amountMove;
+                        else if(parentBehaviour.Config.thirdPerson)
+                            parentBehaviour.Config.posx -= amountMove;
+                        else
+                            parentBehaviour.Config.firstPersonPosOffsetX -= amountMove;
+                        parentBehaviour.CreateScreenRenderTexture();
+                        parentBehaviour.Config.Save();
+                    }
+                    if (GUI.Button(new Rect(menuPos.x + 50, menuPos.y + 260, 40, 30), new GUIContent("+")))
+                    {
+                        if (parentBehaviour.Config.use360Camera)
+                            parentBehaviour.Config.cam360RightOffset += amountMove;
+                        else if (parentBehaviour.Config.thirdPerson)
+                            parentBehaviour.Config.posx += amountMove;
+                        else
+                            parentBehaviour.Config.firstPersonPosOffsetX += amountMove;
+                        parentBehaviour.CreateScreenRenderTexture();
+                        parentBehaviour.Config.Save();
+                    }
+                    //Y Position
+                    GUI.Box(new Rect(menuPos.x +100 , menuPos.y + 240, 95, 55), "Y Pos :" +
+                        (parentBehaviour.Config.use360Camera ? parentBehaviour.Config.cam360UpOffset.ToString("F2") : (parentBehaviour.Config.thirdPerson ? parentBehaviour.Config.posy.ToString("F2") : parentBehaviour.Config.firstPersonPosOffsetY.ToString("F2"))));
+                    if (GUI.Button(new Rect(menuPos.x + 105, menuPos.y + 260, 40, 30), new GUIContent("-")))
+                    {
+                        if (parentBehaviour.Config.use360Camera)
+                            parentBehaviour.Config.cam360UpOffset -= amountMove;
+                        else if (parentBehaviour.Config.thirdPerson)
+                            parentBehaviour.Config.posy -= amountMove;
+                        else
+                            parentBehaviour.Config.firstPersonPosOffsetY -= amountMove;
+                        parentBehaviour.CreateScreenRenderTexture();
+                        parentBehaviour.Config.Save();
+                    }
+                    if (GUI.Button(new Rect(menuPos.x + 150, menuPos.y + 260, 40, 30), new GUIContent("+")))
+                    {
+                        if (parentBehaviour.Config.use360Camera)
+                            parentBehaviour.Config.cam360UpOffset += amountMove;
+                        else if (parentBehaviour.Config.thirdPerson)
+                            parentBehaviour.Config.posy += amountMove;
+                        else
+                            parentBehaviour.Config.firstPersonPosOffsetY += amountMove;
+                        parentBehaviour.CreateScreenRenderTexture();
+                        parentBehaviour.Config.Save();
+                    }
+                    //Z Position
+                    GUI.Box(new Rect(menuPos.x + 205, menuPos.y + 240, 95, 55), "Z Pos :" +
+                        (parentBehaviour.Config.use360Camera ? parentBehaviour.Config.cam360ForwardOffset.ToString("F2") : (parentBehaviour.Config.thirdPerson ? parentBehaviour.Config.posz.ToString("F2") : parentBehaviour.Config.firstPersonPosOffsetZ.ToString("F2"))));
+                    if (GUI.Button(new Rect(menuPos.x + 210, menuPos.y + 260, 40, 30), new GUIContent("-")))
+                    {
+                        if (parentBehaviour.Config.use360Camera)
+                            parentBehaviour.Config.cam360ForwardOffset -= amountMove;
+                        else if (parentBehaviour.Config.thirdPerson)
+                            parentBehaviour.Config.posz -= amountMove;
+                        else
+                            parentBehaviour.Config.firstPersonPosOffsetZ -= amountMove;
+                        parentBehaviour.CreateScreenRenderTexture();
+                        parentBehaviour.Config.Save();
+                    }
+                    if (GUI.Button(new Rect(menuPos.x + 255, menuPos.y + 260, 40, 30), new GUIContent("+")))
+                    {
+                        if (parentBehaviour.Config.use360Camera)
+                            parentBehaviour.Config.cam360ForwardOffset += amountMove;
+                        else if (parentBehaviour.Config.thirdPerson)
+                            parentBehaviour.Config.posz += amountMove;
+                        else
+                            parentBehaviour.Config.firstPersonPosOffsetZ += amountMove;
+                        parentBehaviour.CreateScreenRenderTexture();
+                        parentBehaviour.Config.Save();
+                    }
+                    //Amount of Rotation
+                    GUI.Box(new Rect(menuPos.x, menuPos.y + 300, 290, 55), "Amount rotation : " + amountRot.ToString("F2"));
+                    if (GUI.Button(new Rect(menuPos.x + 5, menuPos.y + 320, 50, 30), new GUIContent("0.01")))
+                    {
+                        amountRot = 0.01f;
+                        parentBehaviour.CreateScreenRenderTexture();
+                    }
+                    if (GUI.Button(new Rect(menuPos.x + 60, menuPos.y + 320, 50, 30), new GUIContent("0.10")))
+                    {
+                        amountRot = 0.1f;
+                        parentBehaviour.CreateScreenRenderTexture();
+                    }
+                    if (GUI.Button(new Rect(menuPos.x + 115, menuPos.y + 320, 50, 30), new GUIContent("1.00")))
+                    {
+                        amountRot = 1.0f;
+                        parentBehaviour.CreateScreenRenderTexture();
+                    }
+                    if (GUI.Button(new Rect(menuPos.x + 170, menuPos.y + 320, 50, 30), new GUIContent("10")))
+                    {
+                        amountRot = 10.0f;
+                        parentBehaviour.CreateScreenRenderTexture();
+                    }
+                    if (GUI.Button(new Rect(menuPos.x + 225, menuPos.y + 320, 50, 30), new GUIContent("45")))
+                    {
+                        amountRot = 45.0f;
+                        parentBehaviour.CreateScreenRenderTexture();
+                    }
+                    //X Rotation
+                    GUI.Box(new Rect(menuPos.x, menuPos.y + 360, 95, 55), "X Rot :" +
+                        (parentBehaviour.Config.use360Camera ? parentBehaviour.Config.cam360XTilt.ToString("F2") : (parentBehaviour.Config.thirdPerson ? parentBehaviour.Config.angx.ToString("F2") : parentBehaviour.Config.firstPersonRotOffsetX.ToString("F2"))));
+                    if (GUI.Button(new Rect(menuPos.x + 5, menuPos.y + 380, 40, 30), new GUIContent("-")))
+                    {
+                        if (parentBehaviour.Config.use360Camera)
+                            parentBehaviour.Config.cam360XTilt -= amountRot;
+                        else if (parentBehaviour.Config.thirdPerson)
+                            parentBehaviour.Config.angx -= amountRot;
+                        else
+                            parentBehaviour.Config.firstPersonRotOffsetX -= amountRot;
+                        parentBehaviour.CreateScreenRenderTexture();
+                        parentBehaviour.Config.Save();
+                    }
+                    if (GUI.Button(new Rect(menuPos.x + 50, menuPos.y + 380, 40, 30), new GUIContent("+")))
+                    {
+                        if (parentBehaviour.Config.use360Camera)
+                            parentBehaviour.Config.cam360XTilt += amountRot;
+                        else if (parentBehaviour.Config.thirdPerson)
+                            parentBehaviour.Config.angx += amountRot;
+                        else
+                            parentBehaviour.Config.firstPersonRotOffsetX += amountRot;
+                        parentBehaviour.CreateScreenRenderTexture();
+                        parentBehaviour.Config.Save();
+                    }
+                    //Y Rotation
+                    GUI.Box(new Rect(menuPos.x + 100, menuPos.y + 360, 95, 55), "Y Rot :" +
+                        (parentBehaviour.Config.use360Camera ? parentBehaviour.Config.cam360YTilt.ToString("F2") : (parentBehaviour.Config.thirdPerson ? parentBehaviour.Config.angy.ToString("F2") : parentBehaviour.Config.firstPersonRotOffsetY.ToString("F2"))));
+                    if (GUI.Button(new Rect(menuPos.x + 105, menuPos.y + 380, 40, 30), new GUIContent("-")))
+                    {
+                        if (parentBehaviour.Config.use360Camera)
+                            parentBehaviour.Config.cam360YTilt -= amountRot;
+                        else if (parentBehaviour.Config.thirdPerson)
+                            parentBehaviour.Config.angy -= amountRot;
+                        else
+                            parentBehaviour.Config.firstPersonRotOffsetY -= amountRot;
+                        parentBehaviour.CreateScreenRenderTexture();
+                        parentBehaviour.Config.Save();
+                    }
+                    if (GUI.Button(new Rect(menuPos.x + 150, menuPos.y + 380, 40, 30), new GUIContent("+")))
+                    {
+                        if (parentBehaviour.Config.use360Camera)
+                            parentBehaviour.Config.cam360YTilt += amountRot;
+                        else if (parentBehaviour.Config.thirdPerson)
+                            parentBehaviour.Config.angy += amountRot;
+                        else
+                            parentBehaviour.Config.firstPersonRotOffsetY += amountRot;
+                        parentBehaviour.CreateScreenRenderTexture();
+                        parentBehaviour.Config.Save();
+                    }
+                    //Z Rotation
+                    GUI.Box(new Rect(menuPos.x + 205, menuPos.y + 360, 95, 55), "Z Rot :" +
+                        (parentBehaviour.Config.use360Camera ? parentBehaviour.Config.cam360ZTilt.ToString("F2") : (parentBehaviour.Config.thirdPerson ? parentBehaviour.Config.angz.ToString("F2") : parentBehaviour.Config.firstPersonRotOffsetZ.ToString("F2"))));
+                    if (GUI.Button(new Rect(menuPos.x + 210, menuPos.y + 380, 40, 30), new GUIContent("-")))
+                    {
+                        if (parentBehaviour.Config.use360Camera)
+                            parentBehaviour.Config.cam360ZTilt -= amountRot;
+                        else if (parentBehaviour.Config.thirdPerson)
+                            parentBehaviour.Config.angz -= amountRot;
+                        else
+                            parentBehaviour.Config.firstPersonRotOffsetZ -= amountRot;
+                        parentBehaviour.CreateScreenRenderTexture();
+                        parentBehaviour.Config.Save();
+                    }
+                    if (GUI.Button(new Rect(menuPos.x + 255, menuPos.y + 380, 40, 30), new GUIContent("+")))
+                    {
+                        if (parentBehaviour.Config.use360Camera)
+                            parentBehaviour.Config.cam360ZTilt += amountRot;
+                        else if (parentBehaviour.Config.thirdPerson)
+                            parentBehaviour.Config.angz += amountRot;
+                        else
+                            parentBehaviour.Config.firstPersonRotOffsetZ += amountRot;
+                        parentBehaviour.CreateScreenRenderTexture();
+                        parentBehaviour.Config.Save();
+                    }
+                    //Close
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 430, 290, 30), new GUIContent("Close Layout Menu")))
                     {
                         layoutMode = false;
                     }

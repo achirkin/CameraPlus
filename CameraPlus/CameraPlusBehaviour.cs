@@ -29,6 +29,7 @@ namespace CameraPlus
         private readonly WaitForSecondsRealtime _waitForSecondsRealtime = new WaitForSecondsRealtime(1f);
         protected const int OnlyInThirdPerson = 3;
         protected const int OnlyInFirstPerson = 6; //Moved to an empty layer because layer 4 overlapped the floor
+        protected const int AlwaysVisible = 10; // For BeatSaberCunstomAvatars above v5.0.0
 
         public bool ThirdPerson {
             get { return _thirdPerson; }
@@ -508,18 +509,18 @@ namespace CameraPlus
             if (Config.avatar)
             {
                 if(Config.thirdPerson || Config.use360Camera)
-                    _cam.cullingMask |= (1 << DisplayAvatarPatch.OnlyInThirdPerson);
+                    _cam.cullingMask |= (1 << OnlyInThirdPerson);
                 else
-                    _cam.cullingMask |= (1 << DisplayAvatarPatch.OnlyInFirstPerson);
-                _cam.cullingMask |= (1 << DisplayAvatarPatch.AlwaysVisible);
+                    _cam.cullingMask |= (1 << OnlyInFirstPerson);
+                _cam.cullingMask |= (1 << AlwaysVisible);
             }
             else
             {
                 if(Config.thirdPerson || Config.use360Camera)
-                    _cam.cullingMask &= ~(1 << DisplayAvatarPatch.OnlyInThirdPerson);
+                    _cam.cullingMask &= ~(1 << OnlyInThirdPerson);
                 else
-                    _cam.cullingMask &= ~(1 << DisplayAvatarPatch.OnlyInFirstPerson);
-                _cam.cullingMask &= ~(1 << DisplayAvatarPatch.AlwaysVisible);
+                    _cam.cullingMask &= ~(1 << OnlyInFirstPerson);
+                _cam.cullingMask &= ~(1 << AlwaysVisible);
             }
         }
 
