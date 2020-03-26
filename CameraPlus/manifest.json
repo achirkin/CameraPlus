@@ -1,12 +1,12 @@
 ﻿{
-  "$schema": "https://raw.githubusercontent.com/beat-saber-modding-group/BSIPA-MetadataFileSchema/master/Schema.json",
-  "author": "Various Modders",
-  "description": "CameraPlus is a Beat Saber mod that allows for multiple wide FOV cameras with smoothed movement. This plugin has TransportWall modified by pespiri.",
-  "gameVersion": "1.8.0",
-  "id": "CameraPlus",
-  "name": "CameraPlus",
-  "version": "3.6.4",
-  "features": [],
-  "dependsOn": {
-  }
+    "$schema": "https://raw.githubusercontent.com/nike4613/ModSaber-MetadataFileSchema/master/Schema.json",
+    "author": "Various Modders",
+    "description": "CameraPlus is a Beat Saber mod that allows for multiple wide FOV cameras with smoothed movement.",
+    "gameVersion": "1.8.0",
+    "id": "CameraPlus",
+    "name": "CameraPlus",
+    "version": "4.0.0",
+    "features": [],
+    "dependsOn": {
+    }
 }

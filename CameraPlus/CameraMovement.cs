@@ -272,7 +272,7 @@ namespace CameraPlus
 
         public static void CreateExampleScript()
         {
-            string path = Path.Combine(BeatSaber.UserDataPath, Plugin.Name, "Scripts");
+            string path = Path.Combine(UnityGame.UserDataPath, Plugin.Name, "Scripts");
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
             string defaultScript = Path.Combine(path, "ExampleMovementScript.json");

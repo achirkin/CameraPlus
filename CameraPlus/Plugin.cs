@@ -6,17 +6,18 @@ using IPA;
 using IPA.Loader;
 using IPALogger = IPA.Logging.Logger;
 using LogLevel = IPA.Logging.Logger.Level;
-using Harmony;
+using HarmonyLib;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace CameraPlus
 {
-    public class Plugin : IBeatSaberPlugin
+    [Plugin(RuntimeOptions.SingleStartInit)]
+    public class Plugin
     {
         private bool _init;
-        private HarmonyInstance _harmony;
+        private Harmony _harmony;
 
         public Action<Scene, Scene> ActiveSceneChanged;
         public ConcurrentDictionary<string, CameraPlusInstance> Cameras = new ConcurrentDictionary<string, CameraPlusInstance>();
@@ -25,19 +26,21 @@ namespace CameraPlus
         public static string Name => "CameraPlus";
         public static string MainCamera => "cameraplus";
 
+        [Init]
         public void Init(IPALogger logger)
         {
             Logger.log = logger;
             Logger.Log("Logger prepared", LogLevel.Debug);
         }
 
+        [OnStart]
         public void OnApplicationStart()
         {
             if (_init) return;
             _init = true;
             Instance = this;
 
-            _harmony = HarmonyInstance.Create("com.brian91292.beatsaber.cameraplus");
+            _harmony = new Harmony("com.brian91292.beatsaber.cameraplus");
             try
             {
                 _harmony.PatchAll(Assembly.GetExecutingAssembly());
@@ -46,7 +49,8 @@ namespace CameraPlus
             {
                 Logger.Log($"Failed to apply harmony patches! {ex}", LogLevel.Error);
             }
-            
+
+            SceneManager.activeSceneChanged += this.OnActiveSceneChanged;
             // Add our default cameraplus camera
             CameraUtilities.AddNewCamera(Plugin.MainCamera);
 
@@ -83,6 +87,7 @@ namespace CameraPlus
             }
         }
 
+        [OnExit]
         public void OnApplicationQuit()
         {
             _harmony.UnpatchAll("com.brian91292.beatsaber.cameraplus");

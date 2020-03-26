@@ -65,6 +65,18 @@ Edit that file to configure CameraPlus:
 | **Avatar**                  | Switch avatar display layer                                                                  |
 | **movementScriptPath**      | Full path to the movement script file to associate with the camera                           |
 
+The sample script described in MovementScriptPath is located in the Beat Saber \ UserData \ CameraPlus \ Scripts folder.
+
+The description is as follows.
+"ActiveInPauseMenu": Determines whether the camera pauses when pausing the game.
+"StartPos": Camera start position (the center of the play area is 0,0,0).
+"StartRot": The rotation at which the camera starts (0,0,0 looks straight at the main menu).
+"EndPos": The position where the camera ends.
+"EndRot": The rotation at which the camera ends.
+"Duration": The time it takes for the transition to start / end / rotate.
+"Delay": the time to wait before proceeding to the next move.
+"EaseTransition": If false, the transition between start / end will be linear. Otherwise, the transition is slower from the beginning to the end and faster.
+
 If you need help, ask us at the Beat Saber Mod Group Discord Server:  
 https://discord.gg/BeatSaberMods
 
