@@ -35,7 +35,7 @@
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.0.0.7, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\Programs\SteamLibrary\steamapps\common\Beat Saber\Libs\0Harmony.dll</HintPath>
+      <HintPath>$(BeatSaberDir)\Libs\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="HMLib">
