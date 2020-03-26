@@ -7,7 +7,7 @@ namespace CameraPlus
     [HarmonyPatch("Init", MethodType.Normal)]
     public class TransparentWallsPatch
     {
-        public static int WallLayerMask = 26;//Moved to layer 26 since FixMRAlpha uses layer 25 in 1.8.0
+        public static int WallLayerMask = 25;
         private static void Postfix(ref ObstacleController __instance)
         {
             Camera.main.cullingMask |= (1 << TransparentWallsPatch.WallLayerMask);//Enables HMD bits because layer 26 is masked by default
