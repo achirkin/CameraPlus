@@ -30,7 +30,7 @@ namespace CameraPlus
         protected const int OnlyInThirdPerson = 3;
         protected const int OnlyInFirstPerson = 6; //Moved to an empty layer because layer 4 overlapped the floor
         protected const int AlwaysVisible = 10; // For BeatSaberCunstomAvatars above v5.0.0
-
+        protected const int ParticleLayer = 16;
         public bool ThirdPerson {
             get { return _thirdPerson; }
             set {
@@ -201,7 +201,7 @@ namespace CameraPlus
                 AddMovementScript();
 
             SetCullingMask();
-
+            _cam.cullingMask |= (1 << ParticleLayer); 
             CameraMovement.CreateExampleScript();
 
             Plugin.Instance.ActiveSceneChanged += SceneManager_activeSceneChanged;
@@ -209,7 +209,7 @@ namespace CameraPlus
             //      FirstPersonOffset = Config.FirstPersonPositionOffset;
             //       FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
             SceneManager_activeSceneChanged(new Scene(), new Scene());
-            Logger.Log($"Camera \"{Path.GetFileName(Config.FilePath)}\" successfully initialized!");
+            Logger.Log($"Camera \"{Path.GetFileName(Config.FilePath)}\" successfully initialized! {Convert.ToString(_cam.cullingMask,16)}");
         }
 
         protected virtual void OnDestroy()
