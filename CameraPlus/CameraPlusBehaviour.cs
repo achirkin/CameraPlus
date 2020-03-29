@@ -201,7 +201,6 @@ namespace CameraPlus
                 AddMovementScript();
 
             SetCullingMask();
-            _cam.cullingMask |= (1 << ParticleLayer); 
             CameraMovement.CreateExampleScript();
 
             Plugin.Instance.ActiveSceneChanged += SceneManager_activeSceneChanged;
@@ -503,6 +502,7 @@ namespace CameraPlus
 
         internal virtual void SetCullingMask()
         {
+            _cam.cullingMask = Camera.main.cullingMask;
             if (Config.transparentWalls)
                 _cam.cullingMask &= ~(1 << TransparentWallsPatch.WallLayerMask);
             else

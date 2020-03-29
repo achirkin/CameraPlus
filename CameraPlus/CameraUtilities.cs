@@ -137,6 +137,14 @@ namespace CameraPlus
             return false;
         }
 
+        public static void SetAllCamerCulling()
+        {
+            foreach (CameraPlusInstance c in Plugin.Instance.Cameras.Values.ToArray())
+            {
+                c.Instance.SetCullingMask();
+            }
+        }
+
         public static void ReloadCameras()
         {
             try
