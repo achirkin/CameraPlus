@@ -68,10 +68,10 @@ namespace CameraPlus
             // If any new cameras have been added to the config folder, render them
            // if(to.name == )
             CameraUtilities.ReloadCameras();
-            CameraUtilities.SetAllCamerCulling();
 
             if (ActiveSceneChanged != null)
             {
+                CameraUtilities.SetAllCameraCulling();
                 // Invoke each activeSceneChanged event
                 foreach (var func in ActiveSceneChanged?.GetInvocationList())
                 {

@@ -137,11 +137,19 @@ namespace CameraPlus
             return false;
         }
 
-        public static void SetAllCamerCulling()
+        public static void SetAllCameraCulling()
         {
-            foreach (CameraPlusInstance c in Plugin.Instance.Cameras.Values.ToArray())
+            try
             {
-                c.Instance.SetCullingMask();
+                foreach (CameraPlusInstance c in Plugin.Instance.Cameras.Values.ToArray())
+                {
+                    c.Instance.SetCullingMask();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"Exception cameras culling! Exception:" +
+                    $" {ex.Message}\n{ex.StackTrace}", LogLevel.Error);
             }
         }
 
