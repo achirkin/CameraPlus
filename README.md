@@ -64,6 +64,7 @@ Edit that file to configure CameraPlus:
 | **transparentWalls**        | Make Walls appear transparent on the camera                                                  |
 | **forceFirstPersonUpRight** | Lock rotation of first person camera on Z axis to keep the camera upright                    |
 | **Avatar**                  | Switch avatar display layer                                                                  |
+| **debri**                   | Switches between In-Game setting linkage, forced display, and forced off for Notes Debris.   |
 | **movementScriptPath**      | Full path (including file name) to the movement script file to associate with the camera     |
 
 
