@@ -4,10 +4,11 @@ CameraPlus is a Beat Saber mod that allows for multiple wide FOV cameras with sm
 [Video Comparison](https://youtu.be/MysLXKSXGTY)  
 [Third Person Preview](https://youtu.be/ltIhpt-n6b8)
 ### Right Click Menu Recently Renovated, Appearance may differ from what is shown in this video
+The video is an old one. The right-click menu has now been changed.
 [![How to use CameraPlus](https://i.imgur.com/UbKrHAF.png)](https://www.youtube.com/watch?v=RpYoMiKJygQ)
 
 # Installing
-1. Use the Beat Saber Mod Manager installer: https://github.com/beat-saber-modding-group/BeatSaberModInstaller/releases
+1. Use the Mod Assistant : https://github.com/Assistant/ModAssistant/releases
 		It is the easiest method, it will do all these steps below in 1 click.
 	
 ### To install manually:
@@ -63,19 +64,43 @@ Edit that file to configure CameraPlus:
 | **transparentWalls**        | Make Walls appear transparent on the camera                                                  |
 | **forceFirstPersonUpRight** | Lock rotation of first person camera on Z axis to keep the camera upright                    |
 | **Avatar**                  | Switch avatar display layer                                                                  |
-| **movementScriptPath**      | Full path to the movement script file to associate with the camera                           |
+| **movementScriptPath**      | Full path (including file name) to the movement script file to associate with the camera     |
 
+
+## Movement Script
 The sample script described in MovementScriptPath is located in the Beat Saber \ UserData \ CameraPlus \ Scripts folder.
+```xml
+{
+    "ActiveInPauseMenu": true,     "ActiveInPauseMenu": Determines whether the camera pauses when pausing the game.
+    "Movements": [                 "Movements"        : Position description section of the moving camera.
+    {
+        "StartPos": {              "StartPos"         : Camera start position (the center of the play area is 0,0,0).
+            "x": 2,
+            "y": 1.75,
+            "z": -2
+        },
+        "StartRot": {              "StartRot"         : The rotation at which the camera starts (0,0,0 looks straight at the main menu).
+            "x": 15,
+            "y": -15,
+            "z": 0
+        },
+        "EndPos": {                "EndPos"           : The position where the camera ends.
+            "x": 2,
+            "y": 1,
+            "z": 9
+        },
+        "EndRot": {                "EndRot"           : The rotation at which the camera ends.
+            "x": 15,
+            "y": -40,
+            "z": 0
+        },
+        "Duration": 4,             "Duration"         : The time it takes for the transition to start / end / rotate.
+        "Delay": 0,                "Delay"            : the time to wait before proceeding to the next move.
+        "EaseTransition": true     "EaseTransition"   : If false, the transition between start / end will be linear. Otherwise, the transition is slower from the beginning to the end and faster.
 
-The description is as follows.
-"ActiveInPauseMenu": Determines whether the camera pauses when pausing the game.
-"StartPos": Camera start position (the center of the play area is 0,0,0).
-"StartRot": The rotation at which the camera starts (0,0,0 looks straight at the main menu).
-"EndPos": The position where the camera ends.
-"EndRot": The rotation at which the camera ends.
-"Duration": The time it takes for the transition to start / end / rotate.
-"Delay": the time to wait before proceeding to the next move.
-"EaseTransition": If false, the transition between start / end will be linear. Otherwise, the transition is slower from the beginning to the end and faster.
+    }]
+}
+```
 
 If you need help, ask us at the Beat Saber Mod Group Discord Server:  
 https://discord.gg/BeatSaberMods

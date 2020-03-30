@@ -161,6 +161,18 @@ namespace CameraPlus
                         parentBehaviour.CloseContextMenu();
                         parentBehaviour.Config.Save();
                     }
+                    if (GUI.Button(new Rect(menuPos.x + 130, menuPos.y + 185, 170, 30), new GUIContent(parentBehaviour.Config.debri=="link" ? "Forced display Debri" : parentBehaviour.Config.debri == "show" ? "Forced non-display Debri" : "Debri Linked In-Game")))
+                    {
+                        if (parentBehaviour.Config.debri == "link")
+                            parentBehaviour.Config.debri = "show";
+                        else if (parentBehaviour.Config.debri=="show")
+                            parentBehaviour.Config.debri = "hide";
+                        else
+                            parentBehaviour.Config.debri = "link";
+                        parentBehaviour.SetCullingMask();
+                        parentBehaviour.CloseContextMenu();
+                        parentBehaviour.Config.Save();
+                    }
                     if (GUI.Button(new Rect(menuPos.x, menuPos.y + 430, 300, 30), new GUIContent("Close Menu")))
                     {
                         parentBehaviour.CloseContextMenu();
