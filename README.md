@@ -70,6 +70,8 @@ Edit that file to configure CameraPlus:
 
 ## Movement Script
 The sample script described in MovementScriptPath is located in the Beat Saber \ UserData \ CameraPlus \ Scripts folder.
+
+# If ActiveInPauseMenu is set to false, there is a bug that the script doesn't return to its original state when SteamVR screen is displayed. # 
 ```xml
 {
     "ActiveInPauseMenu": true,     "ActiveInPauseMenu": Determines whether the camera pauses when pausing the game.

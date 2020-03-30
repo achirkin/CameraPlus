@@ -510,17 +510,21 @@ namespace CameraPlus
             if (Config.avatar)
             {
                 if (Config.thirdPerson || Config.use360Camera)
-                    _cam.cullingMask |= (1 << OnlyInThirdPerson);
+                {
+                    _cam.cullingMask |= 1 << OnlyInThirdPerson;
+                    _cam.cullingMask &= ~(1 << OnlyInFirstPerson);
+                }
                 else
-                    _cam.cullingMask |= (1 << OnlyInFirstPerson);
-                _cam.cullingMask |= (1 << AlwaysVisible);
+                {
+                    _cam.cullingMask |= 1 << OnlyInFirstPerson;
+                    _cam.cullingMask &= ~(1 << OnlyInThirdPerson);
+                }
+                _cam.cullingMask |= 1 << AlwaysVisible;
             }
             else
             {
-                if (Config.thirdPerson || Config.use360Camera)
-                    _cam.cullingMask &= ~(1 << OnlyInThirdPerson);
-                else
-                    _cam.cullingMask &= ~(1 << OnlyInFirstPerson);
+                _cam.cullingMask &= ~(1 << OnlyInThirdPerson);
+                _cam.cullingMask &= ~(1 << OnlyInFirstPerson);
                 _cam.cullingMask &= ~(1 << AlwaysVisible);
             }
             if (Config.debri!="link")
