@@ -22,6 +22,7 @@ namespace CameraPlus
         internal Vector2 mousePosition;
         internal bool showMenu;
         internal bool layoutMode = false;
+        internal bool profileMode = false;
         internal float amountMove = 0.1f;
         internal float amountRot = 0.1f;
         internal CameraPlusBehaviour parentBehaviour;
@@ -36,6 +37,7 @@ namespace CameraPlus
             showMenu = true;
             this.parentBehaviour = parentBehaviour;
             layoutMode = false;
+            profileMode = false;
         }
         public void DisableMenu()
         {
@@ -63,7 +65,7 @@ namespace CameraPlus
                 GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 470), "CameraPlus");
                 GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 470), "CameraPlus");
                 GUI.Box(new Rect(menuPos.x - 5, menuPos.y, 310, 470), "CameraPlus");
-                if (!layoutMode)
+                if (!layoutMode && !profileMode)
                 {
                     if (GUI.Button(new Rect(menuPos.x, menuPos.y + 25, 120, 30), new GUIContent("Add New Camera")))
                     {
@@ -173,17 +175,21 @@ namespace CameraPlus
                         parentBehaviour.CloseContextMenu();
                         parentBehaviour.Config.Save();
                     }
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 225, 300, 30), new GUIContent("Profile Saver")))
+                    {
+                        profileMode = true;
+                    }
                     if (GUI.Button(new Rect(menuPos.x, menuPos.y + 430, 300, 30), new GUIContent("Close Menu")))
                     {
                         parentBehaviour.CloseContextMenu();
                     }
-                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 225, 300, 30), new GUIContent("Spawn 38 Cameras")))
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 265, 300, 30), new GUIContent("Spawn 38 Cameras")))
                     {
                         parentBehaviour.StartCoroutine(CameraUtilities.Spawn38Cameras());
                         parentBehaviour.CloseContextMenu();
                     }
                 }
-                else
+                else if (layoutMode)
                 {
                     if (GUI.Button(new Rect(menuPos.x, menuPos.y + 25, 290, 30), new GUIContent("Reset Camera Position and Rotation")))
                     {
@@ -449,6 +455,32 @@ namespace CameraPlus
                     }
 
 
+                }
+                else if (profileMode)
+                {
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 45, 140, 30), new GUIContent("<")))
+                        CameraProfiles.TrySetLast(CameraProfiles.currentlySelected);
+                    if (GUI.Button(new Rect(menuPos.x + 155, menuPos.y + 45, 140, 30), new GUIContent(">")))
+                        CameraProfiles.SetNext(CameraProfiles.currentlySelected);
+                    if (GUI.Button(new Rect(menuPos.x + 30, menuPos.y + 85, 230, 100), new GUIContent("Currently Selected:\n" + CameraProfiles.currentlySelected)))
+                        CameraProfiles.SetNext(CameraProfiles.currentlySelected);
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 225, 140, 30), new GUIContent("Save")))
+                        CameraProfiles.SaveCurrent();
+                    if (GUI.Button(new Rect(menuPos.x + 150, menuPos.y + 225, 140, 30), new GUIContent("Delete")))
+                        CameraProfiles.DeleteProfile(CameraProfiles.currentlySelected);
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 265, 290, 30), new GUIContent("Load Selected")))
+                    {
+                        var cs = Resources.FindObjectsOfTypeAll<CameraPlusBehaviour>();
+                        foreach (var c in cs)
+                            CameraUtilities.RemoveCamera(c);
+                        foreach (var csi in Plugin.Instance.Cameras.Values)
+                            Destroy(csi.Instance.gameObject);
+                        Plugin.Instance.Cameras.Clear();
+                        CameraProfiles.SetProfile(CameraProfiles.currentlySelected);
+                        CameraUtilities.ReloadCameras();
+                    }
+                    if (GUI.Button(new Rect(menuPos.x, menuPos.y + 305, 290, 30), new GUIContent("Close Profile Menu")))
+                        profileMode = false;
                 }
 
                 GUI.matrix = originalMatrix;
