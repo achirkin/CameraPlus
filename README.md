@@ -6,6 +6,8 @@ CameraPlus is a Beat Saber mod that allows for multiple wide FOV cameras with sm
 ### Right Click Menu Recently Renovated, Appearance may differ from what is shown in this video
 The video is an old one. The right-click menu has now been changed.
 [![How to use CameraPlus](https://i.imgur.com/UbKrHAF.png)](https://www.youtube.com/watch?v=RpYoMiKJygQ)
+### Profile switching has been implemented. (Thanks to Auros!)
+[Click here for an example of how the profile system works (Fefeland Thanks for the video!)](https://streamable.com/018xl)
 
 # Installing
 1. Use the Mod Assistant : https://github.com/Assistant/ModAssistant/releases
@@ -34,6 +36,7 @@ Edit that file to configure CameraPlus:
 | **positionSmooth**          | How much position should smooth **(SMALLER NUMBER = SMOOTHER)**                              |
 | **rotationSmooth**          | How much rotation should smooth **(SMALLER NUMBER = SMOOTHER)**                              |
 | **cam360Smoothness**        | How smoothly the 360 cam snaps to lane changes **(SMALLER NUMBER = SMOOTHER)**               |
+| **cam360RotateControlNew**  | Set to False if you don't like the new 360 degree control.                                   |
 | **thirdPerson**             | Whether third person camera is enabled                                                       |
 | **showThirdPersonCamera**   | Whether or not the third person camera is visible                                            |
 | **use360Camera**            | Whether the 360 camera is used                                                               |
@@ -67,6 +70,7 @@ Edit that file to configure CameraPlus:
 | **debri**                   | Switches between In-Game setting linkage, forced display, and forced off for Notes Debris.   |
 | **movementScriptPath**      | Full path (including file name) to the movement script file to associate with the camera     |
 
+ex) movementScriptpath = "C:\Program Files(x86)\Steam\steamapps\common\Beat Saber\UserData\CameraPlus\Scripts\ExampleMovementScript.json"
 
 ## Movement Script
 The sample script described in MovementScriptPath is located in the Beat Saber \ UserData \ CameraPlus \ Scripts folder.

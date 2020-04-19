@@ -71,6 +71,7 @@ namespace CameraPlus
 
             if (ActiveSceneChanged != null)
             {
+                
                 CameraUtilities.SetAllCameraCulling();
                 // Invoke each activeSceneChanged event
                 foreach (var func in ActiveSceneChanged?.GetInvocationList())

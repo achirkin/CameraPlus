@@ -159,6 +159,7 @@ namespace CameraPlus
             var camera = _mainCamera.transform;
             transform.position = camera.position;
             transform.rotation = camera.rotation;
+            Logger.Log($"near clipplane \"{Camera.main.nearClipPlane}");
 
             gameObj.transform.parent = transform;
             gameObj.transform.localPosition = Vector3.zero;
@@ -166,6 +167,7 @@ namespace CameraPlus
             gameObj.transform.localScale = Vector3.one;
 
             _cameraCubeGO = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            _cameraCubeGO.layer = OnlyInFirstPerson;
             DontDestroyOnLoad(_cameraCubeGO);
             _cameraCubeGO.SetActive(ThirdPerson);
             _cameraCube = _cameraCubeGO.transform;
@@ -181,6 +183,7 @@ namespace CameraPlus
             _quad.transform.localEulerAngles = new Vector3(0, 180, 0);
             _quad.transform.localScale = new Vector3(_cam.aspect, 1, 1);
             _cameraPreviewQuad = _quad;
+            _quad.layer = OnlyInFirstPerson;
 
             ReadConfig();
 
@@ -415,26 +418,42 @@ namespace CameraPlus
 
             if (!_beatLineManager || !Config.use360Camera || !_environmentSpawnRotation) return;
 
+            float a;
             float b;
-            if (_beatLineManager.isMidRotationValid)
+            if (Config.cam360RotateControlNew)
             {
-                double midRotation = (double)this._beatLineManager.midRotation;
-                float num1 = Mathf.DeltaAngle((float)midRotation, this._environmentSpawnRotation.targetRotation);
-                float num2 = (float)(-(double)this._beatLineManager.rotationRange * 0.5);
-                float num3 = this._beatLineManager.rotationRange * 0.5f;
-                if ((double)num1 > (double)num3)
-                    num3 = num1;
-                else if ((double)num1 < (double)num2)
-                    num2 = num1;
-                b = (float)(midRotation + ((double)num2 + (double)num3) * 0.5);
+                if (_beatLineManager.isMidRotationValid)
+                {
+
+                    a = Mathf.LerpAngle(ThirdPersonRot.y, this._beatLineManager.midRotation, Mathf.Clamp(Time.deltaTime * Config.cam360Smoothness, 0f, 1f));
+                    b = Mathf.LerpAngle(ThirdPersonRot.y, this._environmentSpawnRotation.targetRotation, Mathf.Clamp(Time.deltaTime * Config.cam360Smoothness, 0f, 1f));
+
+                    if (a < b)
+                        _yAngle = a;
+                    else
+                        _yAngle = b;
+                }
+
             }
             else
-                b = this._environmentSpawnRotation.targetRotation;
+            {
+                if (_beatLineManager.isMidRotationValid)
+                {
+                    double midRotation = (double)this._beatLineManager.midRotation;
+                    float num1 = Mathf.DeltaAngle((float)midRotation, this._environmentSpawnRotation.targetRotation);
+                    float num2 = (float)(-(double)this._beatLineManager.rotationRange * 0.5);
+                    float num3 = this._beatLineManager.rotationRange * 0.5f;
+                    if ((double)num1 > (double)num3)
+                        num3 = num1;
+                    else if ((double)num1 < (double)num2)
+                        num2 = num1;
+                    b = (float)(midRotation + ((double)num2 + (double)num3) * 0.5);
+                }
+                else
+                    b = this._environmentSpawnRotation.targetRotation;
 
-            _yAngle = Mathf.Lerp(_yAngle, b, Mathf.Clamp(Time.deltaTime * Config.cam360Smoothness, 0f, 1f));
-
- 
-
+                _yAngle = Mathf.Lerp(_yAngle, b, Mathf.Clamp(Time.deltaTime * Config.cam360Smoothness, 0f, 1f));
+            }
             ThirdPersonRot = new Vector3(Config.cam360XTilt, _yAngle + Config.cam360YTilt, Config.cam360ZTilt);
 
             ThirdPersonPos = (transform.forward * Config.cam360ForwardOffset) + (transform.right * Config.cam360RightOffset);

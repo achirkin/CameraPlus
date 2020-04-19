@@ -14,6 +14,8 @@ namespace CameraPlus
         public float rotationSmooth = 5;
         public float cam360Smoothness = 2;
 
+        public bool cam360RotateControlNew = true;
+
         public bool thirdPerson = false;
         public bool showThirdPersonCamera = true;
         public bool use360Camera = false;
