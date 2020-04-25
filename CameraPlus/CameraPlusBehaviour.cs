@@ -415,45 +415,29 @@ namespace CameraPlus
 
         private void HandleThirdPerson360()
         {
-
             if (!_beatLineManager || !Config.use360Camera || !_environmentSpawnRotation) return;
 
-            float a;
             float b;
-            if (Config.cam360RotateControlNew)
+            if (_beatLineManager.isMidRotationValid)
             {
-                if (_beatLineManager.isMidRotationValid)
-                {
-
-                    a = Mathf.LerpAngle(ThirdPersonRot.y, this._beatLineManager.midRotation, Mathf.Clamp(Time.deltaTime * Config.cam360Smoothness, 0f, 1f));
-                    b = Mathf.LerpAngle(ThirdPersonRot.y, this._environmentSpawnRotation.targetRotation, Mathf.Clamp(Time.deltaTime * Config.cam360Smoothness, 0f, 1f));
-
-                    if (a < b)
-                        _yAngle = a;
-                    else
-                        _yAngle = b;
-                }
-
+                double midRotation = (double)this._beatLineManager.midRotation;
+                float num1 = Mathf.DeltaAngle((float)midRotation, this._environmentSpawnRotation.targetRotation);
+                float num2 = (float)(-(double)this._beatLineManager.rotationRange * 0.5);
+                float num3 = this._beatLineManager.rotationRange * 0.5f;
+                if ((double)num1 > (double)num3)
+                    num3 = num1;
+                else if ((double)num1 < (double)num2)
+                    num2 = num1;
+                b = (float)(midRotation + ((double)num2 + (double)num3) * 0.5);
             }
             else
-            {
-                if (_beatLineManager.isMidRotationValid)
-                {
-                    double midRotation = (double)this._beatLineManager.midRotation;
-                    float num1 = Mathf.DeltaAngle((float)midRotation, this._environmentSpawnRotation.targetRotation);
-                    float num2 = (float)(-(double)this._beatLineManager.rotationRange * 0.5);
-                    float num3 = this._beatLineManager.rotationRange * 0.5f;
-                    if ((double)num1 > (double)num3)
-                        num3 = num1;
-                    else if ((double)num1 < (double)num2)
-                        num2 = num1;
-                    b = (float)(midRotation + ((double)num2 + (double)num3) * 0.5);
-                }
-                else
-                    b = this._environmentSpawnRotation.targetRotation;
+                b = this._environmentSpawnRotation.targetRotation;
 
+            if (Config.cam360RotateControlNew)
+                _yAngle = Mathf.LerpAngle(_yAngle, b, Mathf.Clamp(Time.deltaTime * Config.cam360Smoothness, 0f, 1f));
+            else
                 _yAngle = Mathf.Lerp(_yAngle, b, Mathf.Clamp(Time.deltaTime * Config.cam360Smoothness, 0f, 1f));
-            }
+
             ThirdPersonRot = new Vector3(Config.cam360XTilt, _yAngle + Config.cam360YTilt, Config.cam360ZTilt);
 
             ThirdPersonPos = (transform.forward * Config.cam360ForwardOffset) + (transform.right * Config.cam360RightOffset);
