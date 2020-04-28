@@ -167,7 +167,6 @@ namespace CameraPlus
             gameObj.transform.localScale = Vector3.one;
 
             _cameraCubeGO = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            _cameraCubeGO.layer = OnlyInFirstPerson;
             DontDestroyOnLoad(_cameraCubeGO);
             _cameraCubeGO.SetActive(ThirdPerson);
             _cameraCube = _cameraCubeGO.transform;
@@ -183,7 +182,6 @@ namespace CameraPlus
             _quad.transform.localEulerAngles = new Vector3(0, 180, 0);
             _quad.transform.localScale = new Vector3(_cam.aspect, 1, 1);
             _cameraPreviewQuad = _quad;
-            _quad.layer = OnlyInFirstPerson;
 
             ReadConfig();
 
