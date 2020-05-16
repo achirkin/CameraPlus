@@ -406,7 +406,6 @@ namespace CameraPlus
                         Config.rotationSmooth * Time.unscaledDeltaTime);
                     transform.rotation = rot * Quaternion.Euler(0, 0, -(rot.eulerAngles.z));
                 }
-
             }
             catch { }
         }
