@@ -37,7 +37,7 @@ Edit that file to configure Profile change:
 | **MenuProfile**             | Enter the profile name to be read in the Menu scene.                                         |
 | **GameProfile**             | Enter the profile name to be read in the Game scene.                                         |
 ### Profile Name
-[ProfaileName](https://github.com/Snow1226/CameraPlus/blob/master/ScreenShot_ProfileChange.png)
+![ProfileName](https://github.com/Snow1226/CameraPlus/blob/master/ScreenShot_ProfileChange.png)
 Open the Profile menu from Profile Saver in the right-click menu.
 The profile name is displayed under Cullently Selected.
 Please describe this in ini above.
