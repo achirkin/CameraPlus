@@ -84,11 +84,11 @@ namespace CameraPlus
             {
                 if (_rootConfig.ProfileSceneChange)
                 {
-                    if (to.name == "GameCore") 
+                    if (to.name == "GameCore" && _rootConfig.GameProfile != "") 
                     {
                         _profileChanger.ProfileChange(_rootConfig.GameProfile);
                     }
-                    else if (to.name == "MenuCore")
+                    else if (to.name == "MenuCore" && _rootConfig.MenuProfile != "")
                         _profileChanger.ProfileChange(_rootConfig.MenuProfile);
                 }
 

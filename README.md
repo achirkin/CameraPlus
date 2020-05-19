@@ -27,6 +27,23 @@ To edit the settings of any camera in real time, right click on the Beat Saber g
 
 Press <kbd>F1</kbd> to toggle the main camera between first and third person.
 
+## RootConfig
+After you run the game once, a `CameraPlus.ini` file is created within the folder Beat Saber\UserData. This file controls profile switching between menu scenes and game scenes.
+Edit that file to configure Profile change:
+
+| Parameter                   | Description                                                                                  |
+|-----------------------------|----------------------------------------------------------------------------------------------|
+| **ProfileSceneChange**      | When set to True, profile switching is enabled in the Menu scene and Game scene.             |
+| **MenuProfile**             | Enter the profile name to be read in the Menu scene.                                         |
+| **GameProfile**             | Enter the profile name to be read in the Game scene.                                         |
+### Profile Name
+[ProfaileName](https://github.com/Snow1226/CameraPlus/blob/master/ScreenShot_ProfileChange.png)
+Open the Profile menu from Profile Saver in the right-click menu.
+The profile name is displayed under Cullently Selected.
+Please describe this in ini above.
+Example) MenuProfile = "CameraPlusProfile"
+
+## CameraConfig
 After you run the game once, a `cameraplus.cfg` file is created within the folder Beat Saber\UserData\CameraPlus. Any cfg files located in this folder will be used to render additional cameras.
 Edit that file to configure CameraPlus:
 
