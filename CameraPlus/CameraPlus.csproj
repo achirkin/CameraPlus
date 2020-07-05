@@ -60,11 +60,18 @@
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\Main.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="saber-salient">
+      <HintPath>..\..\real-salient\out\build\x64-Release\examples\saber-salient\saber-salient.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="UnityEngine">
       <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+	<Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(BeatSaberDir)\Beat Saber_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
@@ -111,6 +118,7 @@
     <Compile Include="CameraPlusBehaviour.cs" />
     <Compile Include="ReflectionUtil.cs" />
     <Compile Include="RootConfig.cs" />
+    <Compile Include="SaberSalient.cs" />
     <Compile Include="ScreenCameraBehaviour.cs" />
     <Compile Include="SimpleJSON.cs" />
     <Compile Include="CameraMovement.cs" />
@@ -128,6 +136,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\Resize_Horiz.png" />
     <EmbeddedResource Include="Resources\Resize_Vert.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\sabersalient" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

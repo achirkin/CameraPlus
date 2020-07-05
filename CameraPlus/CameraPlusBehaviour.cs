@@ -11,6 +11,7 @@ using UnityEngine.XR;
 using UnityEngine.SceneManagement;
 using VRUIControls;
 using Screen = UnityEngine.Screen;
+using LIV.SDK.Unity;
 
 namespace CameraPlus
 {
@@ -101,6 +102,10 @@ namespace CameraPlus
         public static bool wasWithinBorder = false;
         public static bool anyInstanceBusy = false;
         private static bool _contextMenuEnabled = true;
+
+
+        private static volatile SaberSalientComponent _saberSalient = null;
+        protected SaberSalientCamera _saberSalientOverlayed = null;
 
         public virtual void Init(Config config)
         {
@@ -254,6 +259,26 @@ namespace CameraPlus
                 //      FirstPersonRotationOffset = Config.FirstPersonRotationOffset;
             }
 
+            if (Config.useSaberSalient)
+            {
+                if (_saberSalient == null)
+                {
+                    lock (Camera.main)
+                    {
+                        if (_saberSalient == null)
+                        {
+                            _saberSalient = Camera.main.gameObject.AddComponent<SaberSalientComponent>();
+                        }
+                    }
+                }
+                
+                _saberSalientOverlayed = _cam.gameObject.AddComponent<SaberSalientCamera>();
+                _saberSalientOverlayed.Init(_saberSalient.ss, Config.useSaberOpaque);
+
+                Logger.Log(_saberSalientOverlayed.Camera.width + " " + _saberSalientOverlayed.Camera.height + " " + _saberSalientOverlayed.Camera.fx + " " + _saberSalientOverlayed.Camera.fy);
+            }
+                
+
             SetCullingMask();
             CreateScreenRenderTexture();
             SetFOV();
@@ -266,7 +291,7 @@ namespace CameraPlus
                 var replace = false;
                 if (_camRenderTexture == null)
                 {
-                    _camRenderTexture = new RenderTexture(1, 1, 24);
+                    _camRenderTexture = new RenderTexture(1, 1, 24, RenderTextureFormat.ARGB32, 1);
                     replace = true;
                 }
                 else
@@ -298,15 +323,24 @@ namespace CameraPlus
                 }
 
                 _lastRenderUpdate = DateTime.Now;
-                //GetScaledScreenResolution(Config.renderScale, out var scaledWidth, out var scaledHeight);
-                _camRenderTexture.width = Mathf.Clamp(Mathf.RoundToInt(Config.screenWidth * Config.renderScale), 1, int.MaxValue);
-                _camRenderTexture.height = Mathf.Clamp(Mathf.RoundToInt(Config.screenHeight * Config.renderScale), 1, int.MaxValue);
-
+                if (_saberSalientOverlayed != null)
+                {
+                    var intrs = _saberSalientOverlayed.Camera;
+                    _camRenderTexture.width = intrs.width;
+                    _camRenderTexture.height = intrs.height;
+                }
+                else
+                {
+                    //GetScaledScreenResolution(Config.renderScale, out var scaledWidth, out var scaledHeight);
+                    _camRenderTexture.width = Mathf.Clamp(Mathf.RoundToInt(Config.screenWidth * Config.renderScale), 1, int.MaxValue);
+                    _camRenderTexture.height = Mathf.Clamp(Mathf.RoundToInt(Config.screenHeight * Config.renderScale), 1, int.MaxValue);
+                }
                 _camRenderTexture.useDynamicScale = false;
                 _camRenderTexture.antiAliasing = Config.antiAliasing;
                 _camRenderTexture.Create();
 
                 _cam.targetTexture = _camRenderTexture;
+                // _cam.SetTargetBuffers(_camRenderTexture.colorBuffer, _camRenderTextureDepth.depthBuffer);
                 _previewMaterial.SetTexture("_MainTex", _camRenderTexture);
                 _screenCamera.SetRenderTexture(_camRenderTexture);
                 _screenCamera.SetCameraInfo(Config.ScreenPosition, Config.ScreenSize, Config.layer);
@@ -382,32 +416,53 @@ namespace CameraPlus
             {
                 var camera = _mainCamera.transform;
 
-                if (ThirdPerson)
+                if (_saberSalientOverlayed != null)
                 {
-
-                    HandleThirdPerson360();
-                    transform.position = ThirdPersonPos;
-                    transform.eulerAngles = ThirdPersonRot;
-                    _cameraCube.position = ThirdPersonPos;
-                    _cameraCube.eulerAngles = ThirdPersonRot;
-                    return;
+                    var r1 = Matrix4x4.zero;
+                    r1.m00 = 1;
+                    r1.m11 = 1;
+                    r1.m22 = -1;
+                    r1.m33 = 1;
+                    var r2 = Matrix4x4.zero;
+                    r2.m00 = 1;
+                    r2.m11 = -1;
+                    r2.m22 = 1;
+                    r2.m33 = 1;
+                    var t = r1 * _saberSalientOverlayed.MvTransform.inverse * r2;
+                    transform.position = t.GetPosition();
+                    transform.rotation = t.GetRotation();
+                    _cameraCube.position = transform.position;
+                    _cameraCube.rotation = transform.rotation;
                 }
-                //     Console.WriteLine(Config.FirstPersonPositionOffset.ToString());
-                transform.position = Vector3.Lerp(transform.position, camera.position + Config.FirstPersonPositionOffset,
-                    Config.positionSmooth * Time.unscaledDeltaTime);
-
-                if (!Config.forceFirstPersonUpRight)
-                    transform.rotation = Quaternion.Slerp(transform.rotation, camera.rotation * Quaternion.Euler(Config.FirstPersonRotationOffset),
-                        Config.rotationSmooth * Time.unscaledDeltaTime);
                 else
-
                 {
-                    Quaternion rot = Quaternion.Slerp(transform.rotation, camera.rotation * Quaternion.Euler(Config.FirstPersonRotationOffset),
-                        Config.rotationSmooth * Time.unscaledDeltaTime);
-                    transform.rotation = rot * Quaternion.Euler(0, 0, -(rot.eulerAngles.z));
+                    if (ThirdPerson)
+                    {
+
+                        HandleThirdPerson360();
+                        transform.position = ThirdPersonPos;
+                        transform.eulerAngles = ThirdPersonRot;
+                        _cameraCube.position = ThirdPersonPos;
+                        _cameraCube.eulerAngles = ThirdPersonRot;
+                        return;
+                    }
+                    //     Console.WriteLine(Config.FirstPersonPositionOffset.ToString());
+                    transform.position = Vector3.Lerp(transform.position, camera.position + Config.FirstPersonPositionOffset,
+                        Config.positionSmooth * Time.unscaledDeltaTime);
+
+                    if (!Config.forceFirstPersonUpRight)
+                        transform.rotation = Quaternion.Slerp(transform.rotation, camera.rotation * Quaternion.Euler(Config.FirstPersonRotationOffset),
+                            Config.rotationSmooth * Time.unscaledDeltaTime);
+                    else
+
+                    {
+                        Quaternion rot = Quaternion.Slerp(transform.rotation, camera.rotation * Quaternion.Euler(Config.FirstPersonRotationOffset),
+                            Config.rotationSmooth * Time.unscaledDeltaTime);
+                        transform.rotation = rot * Quaternion.Euler(0, 0, -(rot.eulerAngles.z));
+                    }
                 }
             }
-            catch { }
+            catch (Exception e) { Logger.Log("Late update error: " + e.Message); }
         }
 
         private void HandleThirdPerson360()
@@ -497,7 +552,10 @@ namespace CameraPlus
         internal virtual void SetFOV()
         {
             if (_cam == null) return;
-            _cam.fieldOfView = Config.fov;
+            if (_saberSalientOverlayed == null)
+                _cam.fieldOfView = Config.fov;
+            else
+                _cam.projectionMatrix = _saberSalientOverlayed.PTransform;
         }
 
         internal virtual void SetCullingMask()

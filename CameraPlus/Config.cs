@@ -19,6 +19,8 @@ namespace CameraPlus
         public bool thirdPerson = false;
         public bool showThirdPersonCamera = true;
         public bool use360Camera = false;
+        public bool useSaberSalient = false;
+        public bool useSaberOpaque = false;
 
         public float posx;
         public float posy = 2;
