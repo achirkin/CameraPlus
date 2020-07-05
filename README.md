@@ -25,4 +25,7 @@ It's an experimental code, so everything is hardcoded. You would need:
         `useSaberSalient` (enable the camera video stream) and
         `useSaberOpaque` (show the camera video stream without the game video stream).
 
+#### Demo videos:
 
+- [360° Reason for Living by Morgan Page](https://youtu.be/1GdDrsxVWYE)
+- [360° First of the Year (Equinox) by Skrillex](https://youtu.be/0zMn-zVGNNc)
